@@ -1,15 +1,21 @@
 from pre_processing import X
+from pre_processing import y
+
 import random 
+
 import numpy as np
 import pandas as pd
 pd.set_option("display.max_columns", None)
+
+import matplotlib.pyplot as plt
+import seaborn as sn
 
 # assign X from pre_processing to df
 cohort = X
 cohort.head()
 
 # randomly select a row from cohort to use as example patient
-random.seed(1989)
+random.seed(12)
 sample = random.randint(0, 557)
 print(sample)
 
@@ -29,8 +35,8 @@ def mahalanobis(x=None, data=None, cov=None):
     mahal = np.dot(left_term, x_minus_mu.T)
     return np.sqrt(mahal)
 
-mahalanobis_distance_from_cohort = mahalanobis(x=patient, data=cohort)
-print(mahalanobis_distance_from_cohort)
+pt_mahalanobis_distance_from_cohort = mahalanobis(x=patient, data=cohort)
+print(pt_mahalanobis_distance_from_cohort)
 
 ###################
 # each cohort subject's mah distance
@@ -74,4 +80,34 @@ for i, row in cohort.iterrows():
 
 metrics = ['mahalanobis_distance_to_cohort', 'mahalanobis_distance_to_patient', 'cosine_similarity', 'normalized_dot_product_distance', 'euclidean_distance']
 cohort[metrics].head()
+
+###################
+## Plot KDE of mahalanobis_distance_to_cohort
+# plot cohort, vertical line for pt_mahalanobis_distance_from_cohort
+cohort['mean_centered_mahalanobis_distance_to_cohort'] = cohort['mahalanobis_distance_to_cohort'] - np.mean(cohort['mahalanobis_distance_to_cohort'])
+mean_centered_pt_mahalanobis_distance_from_cohort = pt_mahalanobis_distance_from_cohort - np.mean(cohort['mahalanobis_distance_to_cohort'])
+
+plt.figure()
+sn.kdeplot(
+    x=cohort['mean_centered_mahalanobis_distance_to_cohort'],
+    fill=True,
+    alpha=0.5,
+    color='steelblue')
+plt.axvline(mean_centered_pt_mahalanobis_distance_from_cohort, color='firebrick', linestyle='--', linewidth=2, label="Patient Mahalanobis Distance")
+plt.xlabel("Mahalanobis Distances")
+plt.ylabel("Smoothed Kernel Density")
+plt.savefig("./figs/kde_plot_example", dpi=300)
+plt.show()
+
+#################
+## plot closest 40 patients
+# box plots for some vars 
+# time_since_injury, age, HBI_total, number_prior_conc
+
+################
+## plot y as well
+# time to sx, time to rtp
+
+# percent psac
+
 

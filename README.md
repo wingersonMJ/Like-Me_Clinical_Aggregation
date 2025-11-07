@@ -36,6 +36,8 @@ Taken together, a quality data science and machine learning approach to supporti
     - Dot product / max(norm(both vectors)) (closer to 1 = similar)
     - Euclidean distance (lower = similar)
     - Mahalanobis distance - accounts for variance and correlation (lower = similar)
+6. Use mean-centering to adjust distances to be more interpretable 
+    - Distances are more-or-less non-interpretable values anyway, so centering at zero at least provides some context...
 6. Do actual clustering algorithm
     - Extract some meaning from the clusters, what factors are they associated with? What features characterize each cluster?
     - See what cluster the new patient would fall into
