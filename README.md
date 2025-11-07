@@ -17,22 +17,29 @@ Taken together, a quality data science and machine learning approach to supporti
 
 #### An Overview:
 
-1. Use a sample of patients seen for post-concussion care in our sports medicine clinic 
-    - Limit to just the high level features... this is a proof of concept project, so feasability is most important right now
-    - Normalize the data, Min-Max norm 
+1. A sample of patients seen for post-concussion care in our sports medicine clinic (n=558)
+    - Limit to just the high level features... this is a proof of concept project, so feasability is most important right now (13 features total)
     - One-hot for categoricals
-    - Impute missing data
-2. Mahalanobis distance tells us how similar an individual vector to a distribution of vectors
+2. Impute missing data
+    - Impution strategy was KNN (K=20) 
+    - Works well for numerics, but doesn't have a built-in option for categoricals
+        - My desire would be "most frequent" for categorical imputations
+        - Without that as a built-in option, KNN already calculates the mean value for the 'K' nearest neighbors
+            - Because categoricals are already one-hot encoded, I can just round to the nearest integer to get the "most frequent" for my imputed values
+3. Normalize the data, Min-Max
+    - Need to do this after the imputation, unfortunately. Otherwise my above rounding option won't work
+    - Limitation is that variables are not on the same scale during KNN imputation, which can create some bias. 
+4. Mahalanobis distance tells us how similar an individual vector to a distribution of vectors
     - Answers the question of "how unique is the current patient's clinical presentation? Are they an outlier or atypical?" 
-3. Evaluate similarity **Possible methods to try** 
+5. Evaluate similarity **Possible methods to try** 
     - Cosine similarity (closer to 1 = similar)
     - Dot product / max(norm(both vectors)) (closer to 1 = similar)
     - Euclidean distance (lower = similar)
     - Mahalanobis distance - accounts for variance and correlation (lower = similar)
-4. Do actual clustering algorithm
+6. Do actual clustering algorithm
     - Extract some meaning from the clusters, what factors are they associated with? What features characterize each cluster?
     - See what cluster the new patient would fall into
-5. Use UMAP, t-nSE, or PCA to visualize
+7. Use UMAP, t-nSE, or PCA to visualize
     - 1D: Mahalanobis distance for how much of an 'outlier' this person is. 
         - KDE plot, with patient value highlighted as vertical line?
     - 2D: Scatter plot with current patient's dot highlighted, and the nearest X number of patients also highlighted
