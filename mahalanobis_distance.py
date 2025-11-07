@@ -9,6 +9,7 @@ pd.set_option("display.max_columns", None)
 
 import matplotlib.pyplot as plt
 import seaborn as sn
+from pywaffle import Waffle
 
 # assign X from pre_processing to df
 cohort = X
@@ -21,6 +22,9 @@ print(sample)
 
 patient = X.iloc[sample,:]
 print(patient)
+
+patient_y = y.iloc[sample]
+print(patient_y)
 
 cohort = cohort.drop(index=cohort.index[sample])
 
@@ -100,14 +104,105 @@ plt.savefig("./figs/kde_plot_example", dpi=300)
 plt.show()
 
 #################
-## plot closest 40 patients
+## like-me cohort
+like_me_value = 40
+like_me_by = 'mahalanobis_distance_to_patient'
+idx = cohort[like_me_by].nsmallest(like_me_value).index
+like_me_cohort = cohort.loc[idx]
+like_me_y = y.loc[idx]
+
+like_me_cohort.head()
+like_me_y.head()
+
+###########
+## Undo min-max scaling
+
+##############
+## Summary stats 
+like_me_cohort.describe()
+like_me_y.describe()
+
+print(patient)
+print(patient_y)
+
+#################
 # box plots for some vars 
-# time_since_injury, age, HBI_total, number_prior_conc
+# time_since_injury
+fig, axes = plt.subplots(2, 2, figsize=(10, 7))
+
+sn.boxplot(data=like_me_cohort['time_since_injury'], ax=axes[0], color='lightgrey', showfliers=False)
+sn.stripplot(data=like_me_cohort['time_since_injury'], ax=axes[0], color='dimgrey', size=4, jitter=True)
+axes[0].set_ylabel("Time since injury (days)", fontsize=12)
+
+sn.boxplot(data=like_me_cohort['age'], ax=axes[1], color='lightgrey', showfliers=False)
+sn.stripplot(data=like_me_cohort['age'], ax=axes[1], color='dimgrey', size=4, jitter=True)
+axes[1].set_ylabel("Age (years)", fontsize=12)
+
+sn.boxplot(data=like_me_cohort['HBI_total'], ax=axes[2], color='lightgrey', showfliers=False)
+sn.stripplot(data=like_me_cohort['HBI_total'], ax=axes[2], color='dimgrey', size=4, jitter=True)
+axes[2].set_ylabel("Symptom burden (HBI total score)", fontsize=12)
+
+sn.boxplot(data=like_me_cohort['number_prior_conc'], ax=axes[3], color='lightgrey', showfliers=False)
+sn.stripplot(data=like_me_cohort['number_prior_conc'], ax=axes[3], color='dimgrey', size=4, jitter=True)
+axes[3].set_ylabel("Number of prior concussions", fontsize=12)
+
+plt.tight_layout()
+plt.savefig("./figs/like_me_aggregated_X", dpi=300, bbox_inches='tight')
+plt.show()
 
 ################
 ## plot y as well
-# time to sx, time to rtp
+# time to sx res
+plt.figure(figsize=(12,8))
+sn.kdeplot(
+    x=like_me_y['time_sx'],
+    fill=True,
+    alpha=0.5,
+    color='steelblue')
+plt.axvline(patient_y['time_sx'], color='lightgrey', linestyle='--', linewidth=2, label=f"Patient Time to Symptom Resolution: {patient_y['time_sx']:.0f} days")
+plt.axvline(np.nanmean(like_me_y['time_sx']), color='firebrick', linestyle='--', linewidth=2, label=f"Mean Like-Me-Cohort Time to Symptom Resolution: {np.nanmean(like_me_y['time_sx']):.1f} days")
+plt.axvline(np.nanmedian(like_me_y['time_sx']), color='darkorange', linestyle='--', linewidth=2, label=f"Median Like-Me-Cohort Time to Symptom Resolution: {np.nanmedian(like_me_y['time_sx']):.1f} days")
+plt.xlabel("Time to Symptom Resolution (days)")
+plt.ylabel("Smoothed Kernel Density")
+plt.legend(loc='best')
+plt.tight_layout()
+plt.savefig("./figs/like_me_aggregated_time_sx", dpi=300)
+plt.show()
 
-# percent psac
+# time to rtp
+plt.figure(figsize=(12,8))
+sn.kdeplot(
+    x=like_me_y['time_rtp'],
+    fill=True,
+    alpha=0.5,
+    color='steelblue')
+plt.axvline(patient_y['time_rtp'], color='lightgrey', linestyle='--', linewidth=2, label=f"Patient Time to Return-to-Play: {patient_y['time_rtp']:.0f} days")
+plt.axvline(np.nanmean(like_me_y['time_rtp']), color='firebrick', linestyle='--', linewidth=2, label=f"Mean Like-Me-Cohort Time to Return-to-Play: {np.nanmean(like_me_y['time_rtp']):.1f} days")
+plt.axvline(np.nanmedian(like_me_y['time_rtp']), color='darkorange', linestyle='--', linewidth=2, label=f"Median Like-Me-Cohort Time to Return-to-Play: {np.nanmedian(like_me_y['time_rtp']):.1f} days")
+plt.xlabel("Time to Return-to-Play (days)")
+plt.ylabel("Smoothed Kernel Density")
+plt.legend(loc='best')
+plt.tight_layout()
+plt.savefig("./figs/like_me_aggregated_time_rtp", dpi=300)
+plt.show()
 
+# waffle plot for percent psac
+nanFilled_PPCS = pd.to_numeric(like_me_y['PPCS'], errors='coerce')
+cats = nanFilled_PPCS.map({0: 'No PSaC', 1: 'PSaC'}).fillna('Missing')
+order = ['No PSaC', 'PSaC', 'Missing']
+values = {k: cats.value_counts().get(k, 0) for k in order}
+colors = ['#2ca02c', '#d62728', '#bdbdbd']  # green, red, grey
 
+plt.figure(
+    figsize=(12,8),
+    FigureClass=Waffle,
+    rows=5,
+    values=values,
+    colors=colors,
+    legend={'labels': [f"{k}: {values[k]}" for k in order], 'loc': 'upper right', 'fontsize': 14},
+    title={'label': "PSaC development in Like-Me Cohort", 'loc': 'center', 'fontsize': 16, 'fontweight': 'bold'},
+    block_arranging_style='snake'
+)
+plt.tight_layout()
+plt.savefig("./figs/like_me_aggregated_PSaC", dpi=300)
+plt.show()
