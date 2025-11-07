@@ -69,4 +69,3 @@ for col in X.columns:
 X.iloc[:,0:5].describe()
 X.iloc[:,5:8].describe()
 X.iloc[:,8:].describe()
-
