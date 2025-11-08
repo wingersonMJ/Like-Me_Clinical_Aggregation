@@ -62,6 +62,9 @@ X['BESS_total'].head()
 
 ##############
 ## Min-Max Scaling (just for X, don't care for y)
+X_mins = X.min()
+X_ranges = (X.max() - X.min())
+
 for col in X.columns:
     X[col] = (X[col] - np.min(X[col])) / (np.max(X[col]) - np.min(X[col]))
 

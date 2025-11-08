@@ -1,6 +1,6 @@
 from mahalanobis_distance import cohort, y, patient, patient_y
 from mahalanobis_distance import like_me_cohort, like_me_y
-
+from mahalanobis_distance import like_me_cohort_scaled, patient_scaled
 
 # like_me_cohort
 # like_me_y

@@ -48,3 +48,7 @@ Taken together, a quality data science and machine learning approach to supporti
     - Box-plots: of each feature to show where the patient value stacks up among the patients-like-them 
     - Some special visual for the recovery outcomes
 
+
+
+
+drop a few of the useless binary cols

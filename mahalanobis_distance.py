@@ -1,5 +1,6 @@
 from pre_processing import X
 from pre_processing import y
+from pre_processing import X_mins, X_ranges
 
 import random 
 
@@ -117,43 +118,95 @@ like_me_y.head()
 
 ###########
 ## Undo min-max scaling
+like_me_cohort_original = (like_me_cohort * X_ranges) + (X_mins)
+patient_original = (patient * X_ranges) + X_mins
 
 ##############
-## Summary stats 
+## Summary stats
+# Min-Max values
 like_me_cohort.describe()
-like_me_y.describe()
-
 print(patient)
+
+# Original scale
+like_me_cohort_original.describe()
+print(patient_original)
+
+# y's - never changed from the original scale
+like_me_y.describe()
 print(patient_y)
 
 #################
 # box plots for some vars 
 # time_since_injury
-fig, axes = plt.subplots(2, 2, figsize=(10, 7))
+fig, axes = plt.subplots(3, 2, figsize=(12, 10))
 
-sn.boxplot(data=like_me_cohort['time_since_injury'], ax=axes[0, 0], color='lightgrey', showfliers=False)
-sn.stripplot(data=like_me_cohort['time_since_injury'], ax=axes[0, 0], color='dimgrey', size=4, jitter=True)
-axes[0, 0].scatter(0, patient['time_since_injury'], s=80, linewidths=2, marker='x', color='firebrick', edgecolor='white', zorder=5, label='Patient value')
+sn.boxplot(data=like_me_cohort_original['time_since_injury'], ax=axes[0, 0], color='lightgrey', showfliers=False)
+sn.stripplot(data=like_me_cohort_original['time_since_injury'], ax=axes[0, 0], color='dimgrey', size=4, jitter=True)
+axes[0, 0].scatter(0, patient_original['time_since_injury'], s=80, linewidths=2, marker='x', color='firebrick', edgecolor='white', zorder=5, label='Patient value')
 axes[0, 0].set_ylabel("Time since injury (days)", fontsize=12)
 axes[0, 0].legend(loc='upper center', bbox_to_anchor=(0.5, 1.15), fontsize=12)
 
-sn.boxplot(data=like_me_cohort['age'], ax=axes[0, 1], color='lightgrey', showfliers=False)
-sn.stripplot(data=like_me_cohort['age'], ax=axes[0, 1], color='dimgrey', size=4, jitter=True)
-axes[0, 1].scatter(0, patient['age'], s=80, linewidths=2, marker='x', color='firebrick', edgecolor='white', zorder=5)
+sn.boxplot(data=like_me_cohort_original['age'], ax=axes[0, 1], color='lightgrey', showfliers=False)
+sn.stripplot(data=like_me_cohort_original['age'], ax=axes[0, 1], color='dimgrey', size=4, jitter=True)
+axes[0, 1].scatter(0, patient_original['age'], s=80, linewidths=2, marker='x', color='firebrick', edgecolor='white', zorder=5)
 axes[0, 1].set_ylabel("Age (years)", fontsize=12)
 
-sn.boxplot(data=like_me_cohort['HBI_total'], ax=axes[1, 0], color='lightgrey', showfliers=False)
-sn.stripplot(data=like_me_cohort['HBI_total'], ax=axes[1, 0], color='dimgrey', size=4, jitter=True)
-axes[1, 0].scatter(0, patient['HBI_total'], s=80, linewidths=2, marker='x', color='firebrick', edgecolor='white', zorder=5)
+sn.boxplot(data=like_me_cohort_original['HBI_total'], ax=axes[1, 0], color='lightgrey', showfliers=False)
+sn.stripplot(data=like_me_cohort_original['HBI_total'], ax=axes[1, 0], color='dimgrey', size=4, jitter=True)
+axes[1, 0].scatter(0, patient_original['HBI_total'], s=80, linewidths=2, marker='x', color='firebrick', edgecolor='white', zorder=5)
 axes[1, 0].set_ylabel("Symptom burden (HBI total score)", fontsize=12)
 
-sn.boxplot(data=like_me_cohort['headache_severity'], ax=axes[1, 1], color='lightgrey', showfliers=False)
-sn.stripplot(data=like_me_cohort['headache_severity'], ax=axes[1, 1], color='dimgrey', size=4, jitter=True)
-axes[1, 1].scatter(0, patient['headache_severity'], s=80, linewidths=2, marker='x', color='firebrick', edgecolor='white', zorder=5)
+sn.boxplot(data=like_me_cohort_original['headache_severity'], ax=axes[1, 1], color='lightgrey', showfliers=False)
+sn.stripplot(data=like_me_cohort_original['headache_severity'], ax=axes[1, 1], color='dimgrey', size=4, jitter=True)
+axes[1, 1].scatter(0, patient_original['headache_severity'], s=80, linewidths=2, marker='x', color='firebrick', edgecolor='white', zorder=5)
 axes[1, 1].set_ylabel("Headache severity", fontsize=12)
+
+sn.boxplot(data=like_me_cohort_original['BESS_total'], ax=axes[2, 0], color='lightgrey', showfliers=False)
+sn.stripplot(data=like_me_cohort_original['BESS_total'], ax=axes[2, 0], color='dimgrey', size=4, jitter=True)
+axes[2, 0].scatter(0, patient_original['BESS_total'], s=80, linewidths=2, marker='x', color='firebrick', edgecolor='white', zorder=5)
+axes[2, 0].set_ylabel("BESS total (all stances)", fontsize=12)
+
+sn.boxplot(data=like_me_cohort_original['number_prior_conc'], ax=axes[2, 1], color='lightgrey', showfliers=False)
+sn.stripplot(data=like_me_cohort_original['number_prior_conc'], ax=axes[2, 1], color='dimgrey', size=4, jitter=True)
+axes[2, 1].scatter(0, patient_original['number_prior_conc'], s=80, linewidths=2, marker='x', color='firebrick', edgecolor='white', zorder=5)
+axes[2, 1].set_ylabel("Number of prior concussions", fontsize=12)
 
 plt.tight_layout()
 plt.savefig("./figs/like_me_aggregated_X", dpi=300, bbox_inches='tight')
+plt.show()
+
+#############
+## plot binary variables too
+
+from matplotlib.patches import Patch
+vars_ = ['anx_dep', 'current_sleep_problems', 'exercise_since_injury', 'sex1f']
+labels = ['Yes', 'No']
+colors = ['lightblue', 'slategrey']
+counts = {}
+
+for var in vars_:
+    counts[var] = [(like_me_cohort_original[var] == 1).sum(), (like_me_cohort_original[var] == 0).sum()]
+
+fig, axes = plt.subplots(2, 2, figsize=(7, 8))
+
+axes[0, 0].pie(counts['anx_dep'], labels=None, colors=colors, wedgeprops=dict(linewidth=1, edgecolor="white"))
+axes[0, 0].axis('equal'); axes[0, 0].set_title('Hx of anxiety or depression', fontweight='bold')
+
+axes[0, 1].pie(counts['current_sleep_problems'], labels=None, colors=colors, wedgeprops=dict(linewidth=1, edgecolor="white"))
+axes[0, 1].axis('equal'); axes[0, 1].set_title('Current sleep problems', fontweight='bold')
+
+axes[1, 0].pie(counts['exercise_since_injury'], labels=None, colors=colors, wedgeprops=dict(linewidth=1, edgecolor="white"))
+axes[1, 0].axis('equal'); axes[1, 0].set_title('Exercising since injury', fontweight='bold')
+
+axes[1, 1].pie(counts['sex1f'], labels=None, colors=colors, wedgeprops=dict(linewidth=1, edgecolor="white"))
+axes[1, 1].axis('equal'); axes[1, 1].set_title('Biological Sex: Female', fontweight='bold')
+
+handles = [
+    Patch(facecolor=colors[0], edgecolor="white", label="Yes"),
+    Patch(facecolor=colors[1], edgecolor="white", label="No")]
+fig.legend(handles=handles, loc="upper center", ncol=2, bbox_to_anchor=(0.5, 0.05), frameon=False, handlelength=1, prop={'size': 12})
+plt.tight_layout()
+plt.savefig("./figs/like_me_aggregated_X_categoricals", dpi=300, bbox_inches='tight')
 plt.show()
 
 ################
@@ -197,7 +250,7 @@ nanFilled_PPCS = pd.to_numeric(like_me_y['PPCS'], errors='coerce')
 cats = nanFilled_PPCS.map({0: 'No PSaC', 1: 'PSaC'}).fillna('Missing')
 order = ['No PSaC', 'PSaC', 'Missing']
 values = {k: cats.value_counts().get(k, 0) for k in order}
-colors = ['#2ca02c', '#d62728', '#bdbdbd']
+colors = ['forestgreen', 'firebrick', 'lightgrey']
 
 plt.figure(
     figsize=(12,8),
