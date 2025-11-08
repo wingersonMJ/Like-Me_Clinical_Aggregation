@@ -97,9 +97,10 @@ sn.kdeplot(
     fill=True,
     alpha=0.5,
     color='steelblue')
-plt.axvline(mean_centered_pt_mahalanobis_distance_from_cohort, color='firebrick', linestyle='--', linewidth=2, label="Patient Mahalanobis Distance")
+plt.axvline(mean_centered_pt_mahalanobis_distance_from_cohort, color='firebrick', linestyle='--', linewidth=2, label="Patient Mahalanobis Distance from Cohort")
 plt.xlabel("Mahalanobis Distances")
 plt.ylabel("Smoothed Kernel Density")
+plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1))
 plt.savefig("./figs/kde_plot_example", dpi=300)
 plt.show()
 
@@ -130,21 +131,26 @@ print(patient_y)
 # time_since_injury
 fig, axes = plt.subplots(2, 2, figsize=(10, 7))
 
-sn.boxplot(data=like_me_cohort['time_since_injury'], ax=axes[0], color='lightgrey', showfliers=False)
-sn.stripplot(data=like_me_cohort['time_since_injury'], ax=axes[0], color='dimgrey', size=4, jitter=True)
-axes[0].set_ylabel("Time since injury (days)", fontsize=12)
+sn.boxplot(data=like_me_cohort['time_since_injury'], ax=axes[0, 0], color='lightgrey', showfliers=False)
+sn.stripplot(data=like_me_cohort['time_since_injury'], ax=axes[0, 0], color='dimgrey', size=4, jitter=True)
+axes[0, 0].scatter(0, patient['time_since_injury'], s=80, linewidths=2, marker='x', color='firebrick', edgecolor='white', zorder=5, label='Patient value')
+axes[0, 0].set_ylabel("Time since injury (days)", fontsize=12)
+axes[0, 0].legend(loc='upper center', bbox_to_anchor=(0.5, 1.15), fontsize=12)
 
-sn.boxplot(data=like_me_cohort['age'], ax=axes[1], color='lightgrey', showfliers=False)
-sn.stripplot(data=like_me_cohort['age'], ax=axes[1], color='dimgrey', size=4, jitter=True)
-axes[1].set_ylabel("Age (years)", fontsize=12)
+sn.boxplot(data=like_me_cohort['age'], ax=axes[0, 1], color='lightgrey', showfliers=False)
+sn.stripplot(data=like_me_cohort['age'], ax=axes[0, 1], color='dimgrey', size=4, jitter=True)
+axes[0, 1].scatter(0, patient['age'], s=80, linewidths=2, marker='x', color='firebrick', edgecolor='white', zorder=5)
+axes[0, 1].set_ylabel("Age (years)", fontsize=12)
 
-sn.boxplot(data=like_me_cohort['HBI_total'], ax=axes[2], color='lightgrey', showfliers=False)
-sn.stripplot(data=like_me_cohort['HBI_total'], ax=axes[2], color='dimgrey', size=4, jitter=True)
-axes[2].set_ylabel("Symptom burden (HBI total score)", fontsize=12)
+sn.boxplot(data=like_me_cohort['HBI_total'], ax=axes[1, 0], color='lightgrey', showfliers=False)
+sn.stripplot(data=like_me_cohort['HBI_total'], ax=axes[1, 0], color='dimgrey', size=4, jitter=True)
+axes[1, 0].scatter(0, patient['HBI_total'], s=80, linewidths=2, marker='x', color='firebrick', edgecolor='white', zorder=5)
+axes[1, 0].set_ylabel("Symptom burden (HBI total score)", fontsize=12)
 
-sn.boxplot(data=like_me_cohort['number_prior_conc'], ax=axes[3], color='lightgrey', showfliers=False)
-sn.stripplot(data=like_me_cohort['number_prior_conc'], ax=axes[3], color='dimgrey', size=4, jitter=True)
-axes[3].set_ylabel("Number of prior concussions", fontsize=12)
+sn.boxplot(data=like_me_cohort['headache_severity'], ax=axes[1, 1], color='lightgrey', showfliers=False)
+sn.stripplot(data=like_me_cohort['headache_severity'], ax=axes[1, 1], color='dimgrey', size=4, jitter=True)
+axes[1, 1].scatter(0, patient['headache_severity'], s=80, linewidths=2, marker='x', color='firebrick', edgecolor='white', zorder=5)
+axes[1, 1].set_ylabel("Headache severity", fontsize=12)
 
 plt.tight_layout()
 plt.savefig("./figs/like_me_aggregated_X", dpi=300, bbox_inches='tight')
@@ -159,12 +165,12 @@ sn.kdeplot(
     fill=True,
     alpha=0.5,
     color='steelblue')
-plt.axvline(patient_y['time_sx'], color='lightgrey', linestyle='--', linewidth=2, label=f"Patient Time to Symptom Resolution: {patient_y['time_sx']:.0f} days")
-plt.axvline(np.nanmean(like_me_y['time_sx']), color='firebrick', linestyle='--', linewidth=2, label=f"Mean Like-Me-Cohort Time to Symptom Resolution: {np.nanmean(like_me_y['time_sx']):.1f} days")
-plt.axvline(np.nanmedian(like_me_y['time_sx']), color='darkorange', linestyle='--', linewidth=2, label=f"Median Like-Me-Cohort Time to Symptom Resolution: {np.nanmedian(like_me_y['time_sx']):.1f} days")
+plt.axvline(patient_y['time_sx'], color='firebrick', linestyle='--', linewidth=2, label=f"Patient Time to Symptom Resolution: {patient_y['time_sx']:.0f} days")
+plt.axvline(np.nanmean(like_me_y['time_sx']), color='lightgrey', linestyle='--', linewidth=2, label=f"Mean Like-Me-Cohort Time to Symptom Resolution: {np.nanmean(like_me_y['time_sx']):.1f} days")
+plt.axvline(np.nanmedian(like_me_y['time_sx']), color='lightgrey', linestyle=':', linewidth=2, label=f"Median Like-Me-Cohort Time to Symptom Resolution: {np.nanmedian(like_me_y['time_sx']):.1f} days")
 plt.xlabel("Time to Symptom Resolution (days)")
 plt.ylabel("Smoothed Kernel Density")
-plt.legend(loc='best')
+plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.125))
 plt.tight_layout()
 plt.savefig("./figs/like_me_aggregated_time_sx", dpi=300)
 plt.show()
@@ -176,12 +182,12 @@ sn.kdeplot(
     fill=True,
     alpha=0.5,
     color='steelblue')
-plt.axvline(patient_y['time_rtp'], color='lightgrey', linestyle='--', linewidth=2, label=f"Patient Time to Return-to-Play: {patient_y['time_rtp']:.0f} days")
-plt.axvline(np.nanmean(like_me_y['time_rtp']), color='firebrick', linestyle='--', linewidth=2, label=f"Mean Like-Me-Cohort Time to Return-to-Play: {np.nanmean(like_me_y['time_rtp']):.1f} days")
-plt.axvline(np.nanmedian(like_me_y['time_rtp']), color='darkorange', linestyle='--', linewidth=2, label=f"Median Like-Me-Cohort Time to Return-to-Play: {np.nanmedian(like_me_y['time_rtp']):.1f} days")
+plt.axvline(patient_y['time_rtp'], color='firebrick', linestyle='--', linewidth=2, label=f"Patient Time to Return-to-Play: {patient_y['time_rtp']:.0f} days")
+plt.axvline(np.nanmean(like_me_y['time_rtp']), color='lightgrey', linestyle='--', linewidth=2, label=f"Mean Like-Me-Cohort Time to Return-to-Play: {np.nanmean(like_me_y['time_rtp']):.1f} days")
+plt.axvline(np.nanmedian(like_me_y['time_rtp']), color='lightgrey', linestyle=':', linewidth=2, label=f"Median Like-Me-Cohort Time to Return-to-Play: {np.nanmedian(like_me_y['time_rtp']):.1f} days")
 plt.xlabel("Time to Return-to-Play (days)")
 plt.ylabel("Smoothed Kernel Density")
-plt.legend(loc='best')
+plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.125))
 plt.tight_layout()
 plt.savefig("./figs/like_me_aggregated_time_rtp", dpi=300)
 plt.show()
@@ -191,7 +197,7 @@ nanFilled_PPCS = pd.to_numeric(like_me_y['PPCS'], errors='coerce')
 cats = nanFilled_PPCS.map({0: 'No PSaC', 1: 'PSaC'}).fillna('Missing')
 order = ['No PSaC', 'PSaC', 'Missing']
 values = {k: cats.value_counts().get(k, 0) for k in order}
-colors = ['#2ca02c', '#d62728', '#bdbdbd']  # green, red, grey
+colors = ['#2ca02c', '#d62728', '#bdbdbd']
 
 plt.figure(
     figsize=(12,8),
