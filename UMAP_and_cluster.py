@@ -33,10 +33,10 @@ plt.figure(figsize=(6, 5))
 plt.scatter(two_dim[cohort_mask, 0], two_dim[cohort_mask, 1], s=16, alpha=0.7, label='Cohort', color='lightgrey')
 plt.scatter(two_dim[like_me_mask, 0], two_dim[like_me_mask, 1], s=28, alpha=0.9, label='Like-me patients', color='slategrey')
 plt.scatter(two_dim[patient_mask, 0], two_dim[patient_mask, 1], s=80, marker='x', linewidths=2, label='Patient', color='firebrick')
-
 plt.legend(loc='best', frameon=False)
 plt.xlabel('UMAP-1'); plt.ylabel('UMAP-2')
 plt.tight_layout()
+plt.savefig("./figs/UMAP", dpi=300)
 plt.show()
 
 

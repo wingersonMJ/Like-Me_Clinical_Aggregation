@@ -3,18 +3,24 @@ from pre_processing import y
 from pre_processing import X_mins, X_ranges
 
 import random 
-
 import numpy as np
 import pandas as pd
 pd.set_option("display.max_columns", None)
 
 import matplotlib.pyplot as plt
+from matplotlib.patches import Patch
 import seaborn as sn
 from pywaffle import Waffle
+
+##################### like-me values. defined here and used below
+like_me_value = 40
+like_me_by = 'mahalanobis_distance_to_patient'
+#####################
 
 # assign X from pre_processing to df
 cohort = X
 cohort.head()
+cohort.describe()
 
 # randomly select a row from cohort to use as example patient
 random.seed(12)
@@ -86,6 +92,40 @@ for i, row in cohort.iterrows():
 metrics = ['mahalanobis_distance_to_cohort', 'mahalanobis_distance_to_patient', 'cosine_similarity', 'normalized_dot_product_distance', 'euclidean_distance']
 cohort[metrics].head()
 
+###############
+## Quick comparisons between metrics
+# mahalanobis vs euclidean
+plt.figure()
+plt.scatter(x=cohort['mahalanobis_distance_to_patient'], y=cohort['euclidean_distance'])
+plt.show()
+
+# mahalanobis vs cosine_similarity
+plt.figure()
+plt.scatter(x=cohort['mahalanobis_distance_to_patient'], y=cohort['cosine_similarity'])
+plt.show()
+
+# mahalanobis vs normalized_dot_product_distance
+plt.figure()
+plt.scatter(x=cohort['mahalanobis_distance_to_patient'], y=cohort['normalized_dot_product_distance'])
+plt.show()
+
+#############
+# cosine_similarity vs euclidean
+plt.figure()
+plt.scatter(x=cohort['cosine_similarity'], y=cohort['euclidean_distance'])
+plt.show()
+
+# cosine_similarity vs normalized_dot_product_distance
+plt.figure()
+plt.scatter(x=cohort['cosine_similarity'], y=cohort['normalized_dot_product_distance'])
+plt.show()
+
+################
+# euclidean_distance vs normalized_dot_product_distance
+plt.figure()
+plt.scatter(x=cohort['euclidean_distance'], y=cohort['normalized_dot_product_distance'])
+plt.show()
+
 ###################
 ## Plot KDE of mahalanobis_distance_to_cohort
 # plot cohort, vertical line for pt_mahalanobis_distance_from_cohort
@@ -103,12 +143,10 @@ plt.xlabel("Mahalanobis Distances")
 plt.ylabel("Smoothed Kernel Density")
 plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1))
 plt.savefig("./figs/kde_plot_example", dpi=300)
-plt.show()
 
 #################
 ## like-me cohort
-like_me_value = 40
-like_me_by = 'mahalanobis_distance_to_patient'
+## Values defined above!!
 idx = cohort[like_me_by].nsmallest(like_me_value).index
 like_me_cohort = cohort.loc[idx]
 like_me_y = y.loc[idx]
@@ -173,12 +211,9 @@ axes[2, 1].set_ylabel("Number of prior concussions", fontsize=12)
 
 plt.tight_layout()
 plt.savefig("./figs/like_me_aggregated_X", dpi=300, bbox_inches='tight')
-plt.show()
 
 #############
 ## plot binary variables too
-
-from matplotlib.patches import Patch
 vars_ = ['anx_dep', 'current_sleep_problems', 'exercise_since_injury', 'sex1f']
 labels = ['Yes', 'No']
 colors = ['lightblue', 'slategrey']
@@ -207,7 +242,6 @@ handles = [
 fig.legend(handles=handles, loc="upper center", ncol=2, bbox_to_anchor=(0.5, 0.05), frameon=False, handlelength=1, prop={'size': 12})
 plt.tight_layout()
 plt.savefig("./figs/like_me_aggregated_X_categoricals", dpi=300, bbox_inches='tight')
-plt.show()
 
 ################
 ## plot y as well
@@ -226,7 +260,6 @@ plt.ylabel("Smoothed Kernel Density")
 plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.125))
 plt.tight_layout()
 plt.savefig("./figs/like_me_aggregated_time_sx", dpi=300)
-plt.show()
 
 # time to rtp
 plt.figure(figsize=(12,8))
@@ -243,7 +276,6 @@ plt.ylabel("Smoothed Kernel Density")
 plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.125))
 plt.tight_layout()
 plt.savefig("./figs/like_me_aggregated_time_rtp", dpi=300)
-plt.show()
 
 # waffle plot for percent psac
 nanFilled_PPCS = pd.to_numeric(like_me_y['PPCS'], errors='coerce')
@@ -264,4 +296,3 @@ plt.figure(
 )
 plt.tight_layout()
 plt.savefig("./figs/like_me_aggregated_PSaC", dpi=300)
-plt.show()
