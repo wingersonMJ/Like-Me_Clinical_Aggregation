@@ -14,7 +14,10 @@ from pywaffle import Waffle
 
 ##################### like-me values. defined here and used below
 like_me_value = 40
-like_me_by = 'mahalanobis_distance_to_patient'
+like_me_by = 'euclidean_distance'
+# mahalanobis_distance_to_patient
+# cosine_similarity or normalized_dot_product_distance - have to switch to max...
+# euclidean_distance
 #####################
 
 # assign X from pre_processing to df
@@ -89,56 +92,24 @@ for i, row in cohort.iterrows():
     cohort.loc[i, "normalized_dot_product_distance"] = norm_dot_prod
     cohort.loc[i, "euclidean_distance"] = euclid_dist
 
-metrics = ['mahalanobis_distance_to_cohort', 'mahalanobis_distance_to_patient', 'cosine_similarity', 'normalized_dot_product_distance', 'euclidean_distance']
+metrics = ['mahalanobis_distance_to_patient', 'cosine_similarity', 'normalized_dot_product_distance', 'euclidean_distance']
 cohort[metrics].head()
 
 ###############
 ## Quick comparisons between metrics
-# mahalanobis vs euclidean
-plt.figure()
-plt.scatter(x=cohort['mahalanobis_distance_to_patient'], y=cohort['euclidean_distance'])
-plt.show()
-
-# mahalanobis vs cosine_similarity
-plt.figure()
-plt.scatter(x=cohort['mahalanobis_distance_to_patient'], y=cohort['cosine_similarity'])
-plt.show()
-
-# mahalanobis vs normalized_dot_product_distance
-plt.figure()
-plt.scatter(x=cohort['mahalanobis_distance_to_patient'], y=cohort['normalized_dot_product_distance'])
-plt.show()
-
-#############
-# cosine_similarity vs euclidean
-plt.figure()
-plt.scatter(x=cohort['cosine_similarity'], y=cohort['euclidean_distance'])
-plt.show()
-
-# cosine_similarity vs normalized_dot_product_distance
-plt.figure()
-plt.scatter(x=cohort['cosine_similarity'], y=cohort['normalized_dot_product_distance'])
-plt.show()
-
-################
-# euclidean_distance vs normalized_dot_product_distance
-plt.figure()
-plt.scatter(x=cohort['euclidean_distance'], y=cohort['normalized_dot_product_distance'])
-plt.show()
+sn.pairplot(data=cohort[metrics])
+plt.savefig("./figs/metrics_plot")
 
 ###################
 ## Plot KDE of mahalanobis_distance_to_cohort
 # plot cohort, vertical line for pt_mahalanobis_distance_from_cohort
-cohort['mean_centered_mahalanobis_distance_to_cohort'] = cohort['mahalanobis_distance_to_cohort'] - np.mean(cohort['mahalanobis_distance_to_cohort'])
-mean_centered_pt_mahalanobis_distance_from_cohort = pt_mahalanobis_distance_from_cohort - np.mean(cohort['mahalanobis_distance_to_cohort'])
-
 plt.figure()
 sn.kdeplot(
-    x=cohort['mean_centered_mahalanobis_distance_to_cohort'],
+    x=cohort['mahalanobis_distance_to_cohort'],
     fill=True,
     alpha=0.5,
     color='steelblue')
-plt.axvline(mean_centered_pt_mahalanobis_distance_from_cohort, color='firebrick', linestyle='--', linewidth=2, label="Patient Mahalanobis Distance from Cohort")
+plt.axvline(pt_mahalanobis_distance_from_cohort, color='firebrick', linestyle='--', linewidth=2, label="Patient Mahalanobis Distance from Cohort")
 plt.xlabel("Mahalanobis Distances")
 plt.ylabel("Smoothed Kernel Density")
 plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1))
@@ -214,7 +185,7 @@ plt.savefig("./figs/like_me_aggregated_X", dpi=300, bbox_inches='tight')
 
 #############
 ## plot binary variables too
-vars_ = ['anx_dep', 'current_sleep_problems', 'exercise_since_injury', 'sex1f']
+vars_ = ['current_sleep_problems', 'exercise_since_injury', 'sex1f']
 labels = ['Yes', 'No']
 colors = ['lightblue', 'slategrey']
 counts = {}
@@ -222,24 +193,21 @@ counts = {}
 for var in vars_:
     counts[var] = [(like_me_cohort_original[var] == 1).sum(), (like_me_cohort_original[var] == 0).sum()]
 
-fig, axes = plt.subplots(2, 2, figsize=(7, 8))
+fig, axes = plt.subplots(3, 1, figsize=(7, 8))
 
-axes[0, 0].pie(counts['anx_dep'], labels=None, colors=colors, wedgeprops=dict(linewidth=1, edgecolor="white"))
-axes[0, 0].axis('equal'); axes[0, 0].set_title('Hx of anxiety or depression', fontweight='bold')
+axes[0].pie(counts['sex1f'], labels=None, colors=colors, wedgeprops=dict(linewidth=1, edgecolor="white"))
+axes[0].axis('equal'); axes[0].set_title('Biological Sex: Female', fontweight='bold')
 
-axes[0, 1].pie(counts['current_sleep_problems'], labels=None, colors=colors, wedgeprops=dict(linewidth=1, edgecolor="white"))
-axes[0, 1].axis('equal'); axes[0, 1].set_title('Current sleep problems', fontweight='bold')
+axes[1].pie(counts['current_sleep_problems'], labels=None, colors=colors, wedgeprops=dict(linewidth=1, edgecolor="white"))
+axes[1].axis('equal'); axes[1].set_title('Current sleep problems', fontweight='bold')
 
-axes[1, 0].pie(counts['exercise_since_injury'], labels=None, colors=colors, wedgeprops=dict(linewidth=1, edgecolor="white"))
-axes[1, 0].axis('equal'); axes[1, 0].set_title('Exercising since injury', fontweight='bold')
-
-axes[1, 1].pie(counts['sex1f'], labels=None, colors=colors, wedgeprops=dict(linewidth=1, edgecolor="white"))
-axes[1, 1].axis('equal'); axes[1, 1].set_title('Biological Sex: Female', fontweight='bold')
+axes[2].pie(counts['exercise_since_injury'], labels=None, colors=colors, wedgeprops=dict(linewidth=1, edgecolor="white"))
+axes[2].axis('equal'); axes[2].set_title('Exercising since injury', fontweight='bold')
 
 handles = [
     Patch(facecolor=colors[0], edgecolor="white", label="Yes"),
     Patch(facecolor=colors[1], edgecolor="white", label="No")]
-fig.legend(handles=handles, loc="upper center", ncol=2, bbox_to_anchor=(0.5, 0.05), frameon=False, handlelength=1, prop={'size': 12})
+fig.legend(handles=handles, loc="upper center", ncol=2, bbox_to_anchor=(0.5, 1.05), frameon=False, handlelength=1, prop={'size': 12})
 plt.tight_layout()
 plt.savefig("./figs/like_me_aggregated_X_categoricals", dpi=300, bbox_inches='tight')
 

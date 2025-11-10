@@ -1,7 +1,7 @@
-from mahalanobis_distance import cohort, y, patient, patient_y
-from mahalanobis_distance import like_me_cohort, like_me_y
-from mahalanobis_distance import like_me_cohort_original, patient_original
-from mahalanobis_distance import sample, idx
+from distances import cohort, y, patient, patient_y
+from distances import like_me_cohort, like_me_y
+from distances import like_me_cohort_original, patient_original
+from distances import sample, idx
 
 import pandas as pd 
 import numpy as np
@@ -42,7 +42,11 @@ plt.show()
 
 
 
-# Do clustering algorithm
+## To try with UMAP:
+# Match UMAP metric with metric used in distance calcs
+# set up a random state 
+# tune n_neighbors 
 
+# explore UMPA github example
 
-# Visualize clustering alg 
+# try t-sne or pca

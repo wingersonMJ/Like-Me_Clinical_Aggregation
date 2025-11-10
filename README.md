@@ -18,7 +18,7 @@ Taken together, a quality data science and machine learning approach to supporti
 #### An Overview:
 
 1. A sample of patients seen for post-concussion care in our sports medicine clinic (n=558)
-    - Limit to just the high level features... this is a proof of concept project, so feasability is most important right now (13 features total)
+    - Limit to just the high level features... this is a proof of concept project, so feasability is most important right now (9 features total)
     - One-hot for categoricals
 2. Impute missing data
     - Impution strategy was KNN (K=20) 
