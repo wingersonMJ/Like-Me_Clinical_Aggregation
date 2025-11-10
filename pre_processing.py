@@ -4,6 +4,11 @@ pd.set_option("display.max_columns", None)
 
 from sklearn.impute import KNNImputer
 
+#################
+# Categorical scaling value
+categorical_scaler = 0.66
+#################
+
 # Load in data 
 df = pd.read_excel("../Data/dat.xlsx")
 
@@ -63,6 +68,6 @@ X.describe()
 # down-weight categoricals - contributing too much to distance metrics
 X[categoricals].describe()
 
-X[categoricals] = X[categoricals]*0.66
+X[categoricals] = X[categoricals]*categorical_scaler
 
 X[categoricals].describe()

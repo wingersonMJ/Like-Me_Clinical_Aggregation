@@ -1,6 +1,6 @@
-from pre_processing import X
-from pre_processing import y
+from pre_processing import X, y
 from pre_processing import X_mins, X_ranges
+from pre_processing import categorical_scaler, categoricals
 
 import random 
 import numpy as np
@@ -128,7 +128,10 @@ like_me_y.head()
 ###########
 ## Undo min-max scaling
 like_me_cohort_original = (like_me_cohort * X_ranges) + (X_mins)
+like_me_cohort_original[categoricals] = (like_me_cohort_original[categoricals])/categorical_scaler
+
 patient_original = (patient * X_ranges) + X_mins
+patient_original[categoricals] = (patient_original[categoricals])/categorical_scaler
 
 ##############
 ## Summary stats
