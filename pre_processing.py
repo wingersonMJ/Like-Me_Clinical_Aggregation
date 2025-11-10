@@ -15,7 +15,7 @@ df.shape
 df.drop(columns = ['bess_hard1', 'bess_hard2', 'bess_hard3', 'loc', 'add_adhd', 'ld_dyslexia', 'migraines', 'anxiety', 'depression'], inplace=True)
 
 # check value counts
-categoricals = ['sex1f', 'number_prior_conc', 'exercise_since_injury', 'headache_severity', 'current_sleep_problems']
+categoricals = ['sex1f', 'number_prior_conc', 'exercise_since_injury', 'current_sleep_problems']
 for col in categoricals:
     print(df[col].value_counts())
 
@@ -59,3 +59,10 @@ for col in X.columns:
 
 # Summarize 
 X.describe()
+
+# down-weight categoricals - contributing too much to distance metrics
+X[categoricals].describe()
+
+X[categoricals] = X[categoricals]*0.66
+
+X[categoricals].describe()
