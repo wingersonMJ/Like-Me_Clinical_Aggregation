@@ -1,7 +1,7 @@
 # A Patients-Like-Me approach to aggregating data in clinical management of concussion
 
 **Summary:** This project demonstrates a simple "like-me" approach to matching patients to a reference cohort based on post-concussion demographic and clinical 
-characteristics. Using a like-me matched sub-cohort, we can then aggregate clinical data for individuals within the reference cohort who are most-similar to the 
+characteristics. Using a like-me matched sub-cohort, we can aggregate clinical data for individuals within a reference cohort who are most-similar to the 
 presenting patient, providing summary statistics on recovery and other important health information among individuals from the larger cohort who are "as similar as possible" to 
 the individual being seen for care.  
 
@@ -10,11 +10,11 @@ the individual being seen for care.
 Complex prediction models, such as neural networks, tree-based classifiers, or simple regressions, can inform patients and clinicians about expected recovery timelines. 
 However, these models are limitted by a few factors: 
 - Most prediction models are trained on large cohorts with diverse patient and injury characteristics.
-    - While usually considered a strength, in some contexts generalization to a more precise patient population in a real-world setting can be limitted - patients are left 
-    asking "but do these results apply to *me*?" and clinicians are left wondering if prediction models are accurate in thier patient population.
-- Few prediction models can provide clear reasoning for *why* or *how* a prediction is made, or what factors where most influental in a prediction. 
+    - While usually considered a strength, in some contexts prediction model generalization to a more precise patient population in a real-world setting can be
+    limitted - patients are left asking "but do these results apply to *me*?" and clinicians are left wondering if prediction models are accurate in thier patient population.
+- Few prediction models can provide clear reasoning for *why* or *how* a prediction is made, or what factors were most influental in a prediction. 
 - Prediction models, especially classifiers, can treat medical diseases as a series of binary decisions made in sequence.
-    - Actual clinical management of disease is more complex, and clinicians must use all available information to guide decisions that promote long-term health and recovery.  
+    - Actual clinical management of disease is more complex, and clinicians must use all available information to guide decisions to promote long-term health and recovery.  
 
 **Taken together, a quality data science and machine learning approach would support practitioners treating injury, and would supply as much information as possible to guide 
 practitioners toward a decision/prediction, rather than making a prediction outright with little context.** 
@@ -23,10 +23,8 @@ In this project, I use a "like-me" approach to aggregating data from similar pas
 1. Use similarity matching to take the current individuals's clinical presentation (demographics, injury characteristics, etc) and identify past patients from a reference 
 cohort with similar characteristics. 
 2. Select the N subjects from the reference cohort who are most-similar to the current patient and form a like-me sub-cohort. 
-    - N could be defined by the clinician, but by default is flexible based on how closely the current patient relates to the reference cohort. If their clinical 
-    characteristics are very similar to the reference cohort, their sub-cohort will be larger (i.e., there are more subjects in the reference cohort similar to them). 
-    If they are not as similar to the reference cohort, their sub-cohort will be smaller (fewer subjects in the reference cohort who are similar to them, 
-    so a smaller like-me sub-cohort).
+    - N could be defined by the clinician, but by default is flexibly chosen based on how closely the current patient relates to the reference cohort. A larger N is used when 
+    patients more closely reflect the reference cohort and a smaller N is used for patients with characteristics that do not closely match the reference cohort. 
 3. Aggregate the health and recovery outcomes of subjects in the like-me sub-cohort to inform potential recovery for the current patient.
 4. Package this information together in an easy-to-use dashboard so that clinicians and patients can explore how other's "like them" recovered!
 
@@ -39,14 +37,14 @@ cohort with similar characteristics.
     - Works well for numerics, but doesn't have a built-in option for categoricals
         - My desire would be "most frequent" for categorical imputations
         - Without that as a built-in option, KNN already calculates the mean value for the 'K' nearest neighbors
-            - Because categoricals are already one-hot encoded, I can just round to the nearest integer to get the "most frequent" for my imputed values
+            - Because my categoricals are all binary anyway, I can just round to the nearest integer to get the "most frequent" for my imputed values
 3. Normalize the data, Min-Max
     - Need to do this after the imputation, unfortunately
     - Limitation is that variables are not on the same scale during KNN imputation, which can create some bias
 4. Apply some scaling to categorical variables
     - When measuring distances (euclidean, for example), the scale of the data is a major factor
-        - This is why something like min-max scaling is important
-    - But, if many binary variables are present, then those variables after one-hot encoding are all either 0 or 1
+        - This is why normalization or standardization is important
+    - But, if many binary variables are present, then those variables are all either 0 or 1
         - When numerics are also min-max scaled, then 0 is the lowest value in the dataset and 1 is the largest
         - Therefore, if comparing a numeric and a categorical, a 1-unit difference in the categorical variable is a simple difference of binary category. 
         - But a 1-unit difference in the numeric variable is the entire range of the variable...
@@ -57,35 +55,36 @@ cohort with similar characteristics.
         between the two levels of the feature.
             - In this way, they contribute less (66% as much, actually) to the distance measurements. 
         - Why 0.66? An arbitrary choice on my end. 
-            - Instead, I could have 'tuned' this value. Or, instead, I could have applied a scalar to each variable (categorical and numeric) based on it's univariable 
+            - I could have 'tuned' this value. Or, instead, I could have applied a scalar to each variable (categorical and numeric) based on its univariable 
             association with a recovery outcome, such as time to symptom resolution.
 5. Select a single patient at random from the dataset
-    - This person will serve as our "example" patient, or the patient we are trying to compare back to. 
+    - This person will serve as our "example" patient.
     - Remove this person from the cohort and hold their info off to the side - will be used throughout in various ways! 
 6. Calculate distance metrics for every person in the cohort (and for our example patient, too)!
     1. Mahalanobis distance from the cohort
-        - Using Mahalanobis distance, how far is the sample from the mean of the cohort? 
+        - Using Mahalanobis distance, how far is the subject from the mean of the cohort? 
     2. Mahalanobis distance to the patient
-        - Using Mahalanobis distance, how far is the sample from our example patient?
+        - Using Mahalanobis distance, how far is the subject from our example patient?
     3. Cosine similarity
-        - What is the difference in angle of the sample vector and the example patient vector? Does not account for the magnitude of each vector, though. In a situation where 
+        - What is the difference in angle of the subject vector and the example patient vector? Does not account for the magnitude of each vector, though. In a situation where 
         magnitude is important (scale matters and ratios are not particularly important), cosine similarity may not be a good option...
     4. Dot product between vectors, normalized by magnitude
         - Similar to cosine similarity, but is normalized by the magnitude of the largest vector, so magnitude is accounted for. 
     5. Euclidean distance
         - Simple and trust-worthy! 
 7. Identify a like-me sub-cohort
-    - Select the n subjects closest from the reference cohort based on any of the above distance metrics 
+    - Select the N subjects from the reference cohort who are closest to the patient based on any of the above distance metrics 
         - I used Mahalanobis distance and euclidean distance to define the closest subjects
-        - I used a flexible sub-cohort size based on the patients Mahalanobis distance from the reference cohort
-            - A smaller Mahalanobis distance means the patient's values are closer to the mean of the reference cohort.
-                - For subjects with a smaller Mahalanobis distance to the cohort, a larger sub-cohort size can be used. Because they are very similar to the reference cohort. 
-            - A larger Mahalanobis distance means the patient's values are further from the mean of the refernce cohort.
-                - For subjects with a larger Mahalanobis distance to the cohort, a smaller sub-cohort size is necessary, because they are not as similar to the reference cohort 
-                and ferwer subjects would be similar to the patient. 
+        - I used a flexible sub-cohort size (N) based on the patients Mahalanobis distance from the reference cohort
+            - A smaller Mahalanobis distance indicates the patient's values are closer to the mean of the reference cohort.
+                - For subjects with a smaller Mahalanobis distance to the cohort, a larger sub-cohort size can be used because the patient is very similar to the
+                reference cohort. 
+            - A larger Mahalanobis distance indicates the patient's values are further from the mean of the refernce cohort.
+                - For subjects with a larger Mahalanobis distance to the cohort, a smaller sub-cohort size is necessary because the patient is not as similar to the
+                reference cohort and ferwer subjects would be similar to the patient. 
     - N = (10 - Patient Mahalanobis Distance to Cohort)*10 
-        - The number of subjects in the like-me sub-cohort is related to distance to the reference cohort. 
-        - Our example patient has a Mahalanobis distance of ~5.5 (about 75th percentile), so their sub-cohort size would be ~45 subjects. 
+        - The number of subjects in the like-me sub-cohort is related to the patient's distance to the reference cohort. 
+        - Our example patient has a Mahalanobis distance of ~5.5 (around the 75th percentile), so their sub-cohort size would be ~45 subjects. 
 8. Plot clinically-relevant information
     - Clinical characteristics for the sub-cohort
     - Recovery outcomes for the sub-cohort 
@@ -97,7 +96,7 @@ cohort with similar characteristics.
 
 We have n=558 in the reference cohort. One subect was randomly selected to serve as the "example patient". In practice, we would know the example patients clinical 
 characteristics and would use that to identify a like-me sub-cohort based on similar patients from the reference cohort. We would also use the sub-cohorts recovery 
-outcomes to estimate the current patients recovery, based on real data from past persons who are "like them".
+outcomes to estimate the current patients recovery, based on real data from past persons who are "like them". In this situation, because our example patient comes from the reference cohort, I have the actual recovery outcomes from the example patient and will plot those as well. 
 
 ### Distance metrics:
 
@@ -144,8 +143,7 @@ characteristics are not very similar to the reference cohort and therefore shoul
 
 <img src="figs\like_me_aggregated_X_categoricals.png" width=800>
 
-*Clinical interpretation: These are the characteristics that define the like-me sub-cohort. My patient is plotted alongside the other ~40 subjects from the reference cohort who 
-were most like my patient.*
+*Clinical interpretation: These are the characteristics that define the like-me sub-cohort.*
 <br>
 <br>
 
