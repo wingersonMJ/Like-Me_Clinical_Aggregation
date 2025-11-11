@@ -111,6 +111,7 @@ plt.savefig("./figs/kde_plot_example", dpi=300)
 ## like-me cohort
 like_me_value = (10 - pt_mahalanobis_distance_from_cohort)*10
 like_me_value = np.round(like_me_value, decimals=0)
+print(like_me_value)
 like_me_by = 'euclidean_distance'
 # mahalanobis_distance_to_patient
 # cosine_similarity or normalized_dot_product_distance - have to switch to max below
