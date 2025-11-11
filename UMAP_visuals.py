@@ -6,6 +6,7 @@ from distances import sample, idx
 import pandas as pd 
 import numpy as np
 import time as time
+from datetime import datetime
 
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -28,16 +29,18 @@ cohort_mask = ~(patient_mask | like_me_mask)
 
 ################
 # UMAP for loop to tune hyper_params
+randomness = [42, 43, 1997, 1989] #
+neighbors = [10, 20, 40, 80, 100, 150, 200] #
+min_d = [0.0, 0.01, 0.05, 0.10, 0.15, 0.20, 0.30] #
+metric = ['euclidean', 'cosine', 'correlation', 'mahalanobis'] #
+spread = [0.10, 0.20, 0.30, 0.60, 0.80, 0.99] #
+
+umap_performance = pd.DataFrame(columns=['randomness', 'neighbors', 'min_d', 'metric', 'spread', 'within_sum_of_squares', 'between_sum_of_squares', 'ratio'])
+
+number_of_combinations = (len(randomness)*len(neighbors)*len(min_d)*len(metric)*len(spread))
+print(number_of_combinations)
+
 start = time.time()
-
-randomness = [42, 43, 44, 45, 1997, 1989]
-neighbors = [5, 10, 20, 40, 80, 100, 150, 200]
-min_d = [0.0, 0.01, 0.05, 0.10, 0.25, 0.50, 0.75, 0.90, 0.99]
-metric = ['euclidean', 'cosine', 'correlation', 'mahalanobis', 'yule']
-spread = [0.001, 0.05, 0.10, 0.25, 0.50, 0.75, 1.0, 1.5, 2.0, 4.0]
-
-umap_performance = []
-
 for r in randomness:
     for n in neighbors:
         for d in min_d:
@@ -88,7 +91,7 @@ for r in randomness:
                     ratio = within_ss/between_ss
 
                     # save params and performance
-                    umap_performance.append({
+                    iteration_performance = {
                         'randomness': r,
                         'neighbors': n,
                         'min_d': d,
@@ -97,26 +100,30 @@ for r in randomness:
                         'within_sum_of_squares': within_ss,
                         'between_sum_of_squares': between_ss,
                         'ratio': ratio
-                    })
+                    }
+                    umap_performance.loc[len(umap_performance)] = iteration_performance
 
+                    current_time = datetime.now().strftime("%Y-%m-%d")
+                    save_name = f"../Data/umap_performance{current_time}.csv"
+                    umap_performance.to_csv(save_name)
 end = time.time()
 print(f"{(end-start)/60} minutes to run")
 
-# save performance
-umap_performance = pd.DataFrame(umap_performance)
-umap_performance.sort_values(by='ratio', ascending=True, inplace=True)
-umap_performance.to_csv("../Data/umap_performance.csv")
+###################################
+# load final doc and sort performance
+final_performance = pd.read_csv(save_name) # replace with actual file name: "../Data/umap_performance{date}.csv"
+final_performance.sort_values(by='ratio', ascending=True, inplace=True)
 
-umap_performance.head()
+final_performance.head()
 
 #############
 # final UMAP with tuned hyper_params
 reducer = umap.UMAP(
-    n_neighbors=umap_performance['neighbors'].iloc[0],
-    min_dist=umap_performance['min_d'].iloc[0],
-    metric=umap_performance['metric'].iloc[0],
-    spread=umap_performance['spread'].iloc[0],
-    random_state=umap_performance['randomness'].iloc[0]
+    n_neighbors=final_performance['neighbors'].iloc[0],
+    min_dist=final_performance['min_d'].iloc[0],
+    metric=final_performance['metric'].iloc[0],
+    spread=final_performance['spread'].iloc[0],
+    random_state=final_performance['randomness'].iloc[0]
     )
 two_dim = reducer.fit_transform(cohort)
 
