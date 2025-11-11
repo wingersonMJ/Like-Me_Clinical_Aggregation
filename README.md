@@ -13,14 +13,16 @@ However, these models are limitted by a few factors:
     - While usually considered a strength, in some contexts generalization to a more precise patient population in a real-world setting can be limitted - patients are left 
     asking "but do these results apply to *me*?" and clinicians are left wondering if prediction models are accurate in thier patient population.
 - Few prediction models can provide clear reasoning for *why* or *how* a prediction is made, or what factors where most influental in a prediction. 
-    - Clinicians and patients, therefore, may not always strongly consider predictions made by the model
-- Prediction models, especially classifiers, can treat medical diseases as a series of binary decisions made in sequence 
-    - Actual clinical management of disease is more complex, and clinicians must use all available information to guide decisions that promote long-term health and recovery, 
-    while prediction models often evaluate the best decision to improve the current disease state with little longitudinal context
+- Prediction models, especially classifiers, can treat medical diseases as a series of binary decisions made in sequence.
+    - Actual clinical management of disease is more complex, and clinicians must use all available information to guide decisions that promote long-term health and recovery.  
 
-Taken together, a quality data science and machine learning approach to supporting practitioners might consider:
-1. Using similarity matching to take the current individuals's clinical presentation (demographics, injury characteristics, etc) and identify past patients with similar 
-characteristics
+*Taken together, a quality data science and machine learning approach would support practitioners treating injury, and would supply as much information as possible to guide 
+practitioners toward a decision/prediction, rather than making a prediction outright with little context.*  
+
+In this project, I use a "like-me" approach to aggregating data from similar past patients to inform expected recovery outcomes for current patients. In order to do this, we:  
+1. Using similarity matching to take the current individuals's clinical presentation (demographics, injury characteristics, etc) and identify past patients from a reference 
+cohort with similar characteristics. 
+2. Select N subjects from 
 2. Explore the health and recovery outcomes of those similar past patients to inform potential recovery for the current individual
 3. Package this information together in an easy-to-use dashboard so that clinicians and patients can explore how other's "like them" recovered!
 

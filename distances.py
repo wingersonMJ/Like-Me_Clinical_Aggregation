@@ -12,14 +12,6 @@ from matplotlib.patches import Patch
 import seaborn as sn
 from pywaffle import Waffle
 
-##################### like-me values. defined here and used below
-like_me_value = 40
-like_me_by = 'euclidean_distance'
-# mahalanobis_distance_to_patient
-# cosine_similarity or normalized_dot_product_distance - have to switch to max...
-# euclidean_distance
-#####################
-
 # assign X from pre_processing to df
 cohort = X
 cohort.head()
@@ -117,7 +109,12 @@ plt.savefig("./figs/kde_plot_example", dpi=300)
 
 #################
 ## like-me cohort
-## Values defined above!!
+like_me_value = (10 - pt_mahalanobis_distance_from_cohort)*10
+like_me_value = np.round(like_me_value, decimals=0)
+like_me_by = 'euclidean_distance'
+# mahalanobis_distance_to_patient
+# cosine_similarity or normalized_dot_product_distance - have to switch to max below
+# euclidean_distance
 idx = cohort[like_me_by].nsmallest(like_me_value).index
 like_me_cohort = cohort.loc[idx]
 like_me_y = y.loc[idx]
