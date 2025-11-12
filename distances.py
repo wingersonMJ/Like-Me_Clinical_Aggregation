@@ -86,6 +86,7 @@ for i, row in cohort.iterrows():
 
 metrics = ['mahalanobis_distance_to_patient', 'cosine_similarity', 'normalized_dot_product_distance', 'euclidean_distance']
 cohort[metrics].head()
+print(cohort['euclidean_distance'].min(), cohort['euclidean_distance'].max())
 
 ###############
 ## Quick comparisons between metrics

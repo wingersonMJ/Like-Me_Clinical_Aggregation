@@ -205,20 +205,27 @@ ax.legend(frameon=False)
 plt.tight_layout()
 plt.show()
 
+#################
+## Euclid Dist 
+#################
 # hist lm_mean_euclid_dist_to_pt and nlm_mean_euclid_dist_to_pt
 fig, ax = plt.subplots(figsize=(6,4))
-ax.hist(final_performance['lm_mean_euclid_dist_to_pt'], bins=20, density=True, alpha=0.4, edgecolor='white', color='slategrey', label='Histogram')
-ax.hist(final_performance['nlm_mean_euclid_dist_to_pt'], bins=20, density=True, alpha=0.4, edgecolor='white', color='lightgrey', label='Histogram')
+ax.hist(final_performance['lm_mean_euclid_dist_to_pt'], bins=20, density=True, alpha=0.6, edgecolor='white', color='slategrey', label='Like-Me Sub-Cohort')
+ax.hist(final_performance['nlm_mean_euclid_dist_to_pt'], bins=40, density=True, alpha=0.5, edgecolor='white', color='dimgrey', label='All other reference subjects')
 ax.set_xlabel("Euclidean Distance to Patient (similarity confirmation)")
 ax.set_ylabel("Density")
 ax.legend(frameon=False)
 plt.tight_layout()
 plt.show()
 
+################
+## SX time
+################
 # kde lm_mean_subj_diff_sx and nlm_mean_subj_diff_sx
 fig, ax = plt.subplots(figsize=(6,4))
 sns.kdeplot(x=(final_performance['lm_mean_subj_diff_sx']*-1), ax=ax, fill=True, alpha=0.7, color='lightgrey', linewidth=1.8, label='Reference Cohort')
 sns.kdeplot(x=(final_performance['nlm_mean_subj_diff_sx']*-1), ax=ax, fill=True, alpha=0.25, color='slategrey', linewidth=1.8, label='Like-Me Sub-Cohort')
+plt.axvline(x=0, color='lightgrey', linestyle='--', linewidth=1.5, label="Perfect Prediction")
 ax.set_xlabel("Difference between actual patient Sx Time and mean of Like-Me Sub-Cohort")
 ax.set_ylabel("Density")
 ax.legend(frameon=False)
@@ -229,16 +236,21 @@ plt.show()
 fig, ax = plt.subplots(figsize=(6,4))
 sns.kdeplot(x=(final_performance['lm_median_subj_diff_sx']*-1), ax=ax, fill=True, alpha=0.7, color='lightgrey', linewidth=1.8, label='Reference Cohort')
 sns.kdeplot(x=(final_performance['nlm_median_subj_diff_sx']*-1), ax=ax, fill=True, alpha=0.25, color='slategrey', linewidth=1.8, label='Like-Me Sub-Cohort')
+plt.axvline(x=0, ymax=0.95, color='lightgrey', linestyle='--', linewidth=1.5, label="Perfect Prediction")
 ax.set_xlabel("Difference between actual patient Sx Time and median of Like-Me Sub-Cohort")
 ax.set_ylabel("Density")
 ax.legend(frameon=False)
 plt.tight_layout()
 plt.show()
 
+################
+## RTP
+################
 # hist lm_mean_subj_diff_rtp and nlm_mean_subj_diff_rtp
 fig, ax = plt.subplots(figsize=(6,4))
 sns.kdeplot(x=(final_performance['lm_mean_subj_diff_rtp']*-1), ax=ax, fill=True, alpha=0.7, color='lightgrey', linewidth=1.8, label='Reference Cohort')
 sns.kdeplot(x=(final_performance['nlm_mean_subj_diff_rtp']*-1), ax=ax, fill=True, alpha=0.25, color='slategrey', linewidth=1.8, label='Like-Me Sub-Cohort')
+plt.axvline(x=0, color='lightgrey', linestyle='--', linewidth=1.5, label="Perfect Prediction")
 ax.set_xlabel("Difference between actual patient Time to RTP and mean of Like-Me Sub-Cohort")
 ax.set_ylabel("Density")
 ax.legend(frameon=False)
@@ -249,13 +261,9 @@ plt.show()
 fig, ax = plt.subplots(figsize=(6,4))
 sns.kdeplot(x=(final_performance['lm_median_subj_diff_rtp']*-1), ax=ax, fill=True, alpha=0.7, color='lightgrey', linewidth=1.8, label='Reference Cohort')
 sns.kdeplot(x=(final_performance['nlm_median_subj_diff_rtp']*-1), ax=ax, fill=True, alpha=0.25, color='slategrey', linewidth=1.8, label='Like-Me Sub-Cohort')
+plt.axvline(x=0, color='lightgrey', linestyle='--', linewidth=1.5, label="Perfect Prediction")
 ax.set_xlabel("Difference between actual patient Time to RTP and median of Like-Me Sub-Cohort")
 ax.set_ylabel("Density")
 ax.legend(frameon=False)
 plt.tight_layout()
 plt.show()
-
-
-
-
-## Double-check euclidean distance too

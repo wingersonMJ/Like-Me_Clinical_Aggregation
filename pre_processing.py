@@ -71,3 +71,10 @@ X[categoricals].describe()
 X[categoricals] = X[categoricals]*categorical_scaler
 
 X[categoricals].describe()
+
+# cut out significant outliers in outcome var
+outcome_threshold = 100
+y.loc[y['time_sx'] > outcome_threshold, 'time_sx'] = np.nan
+y.loc[y['time_rtp'] > outcome_threshold, 'time_sx'] = np.nan
+
+y['time_sx'].max()
