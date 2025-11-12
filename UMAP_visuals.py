@@ -31,7 +31,7 @@ cohort_mask = ~(patient_mask | like_me_mask)
 # UMAP for loop to tune hyper_params
 randomness = [42, 43, 1997, 1989] #
 neighbors = [10, 20, 40, 80, 100, 150, 200] #
-min_d = [0.0, 0.01, 0.05, 0.10, 0.15, 0.20, 0.30] #
+min_d = [0.0, 0.01, 0.05, 0.10, 0.15, 0.20, 0.30, 0.50] #
 metric = ['euclidean', 'cosine', 'correlation', 'mahalanobis'] #
 spread = [0.10, 0.20, 0.30, 0.60, 0.80, 0.99] #
 
@@ -104,14 +104,14 @@ for r in randomness:
                     umap_performance.loc[len(umap_performance)] = iteration_performance
 
                     current_time = datetime.now().strftime("%Y-%m-%d")
-                    save_name = f"../Data/umap_performance{current_time}.csv"
+                    save_name = f"../Data/umap_performance_final.csv"
                     umap_performance.to_csv(save_name)
 end = time.time()
 print(f"{(end-start)/60} minutes to run")
 
 ###################################
 # load final doc and sort performance
-final_performance = pd.read_csv(save_name) # replace with actual file name: "../Data/umap_performance{date}.csv"
+final_performance = pd.read_csv(save_name) # replace with actual file name: "../Data/umap_performance_{date}.csv"
 final_performance.sort_values(by='ratio', ascending=True, inplace=True)
 
 final_performance.head()
@@ -135,23 +135,24 @@ plt.scatter(two_dim[patient_mask, 0], two_dim[patient_mask, 1], s=80, marker='x'
 plt.legend(loc='best', frameon=False)
 plt.xlabel('UMAP-1'); plt.ylabel('UMAP-2')
 plt.tight_layout()
-plt.savefig("./figs/UMAP", dpi=300)
-plt.show()
+plt.savefig("./figs/UMAP_1", dpi=300)
 
-##############
-# try t-sne
-from sklearn.manifold import TSNE
-
-t_reducer = TSNE(n_components = 2, random_state=1989)
-tsne_data = t_reducer.fit_transform(cohort)
+# tuned with second best UMAP params
+reducer = umap.UMAP(
+    n_neighbors=final_performance['neighbors'].iloc[1],
+    min_dist=final_performance['min_d'].iloc[1],
+    metric=final_performance['metric'].iloc[1],
+    spread=final_performance['spread'].iloc[1],
+    random_state=final_performance['randomness'].iloc[1]
+    )
+two_dim = reducer.fit_transform(cohort)
 
 # plot
 plt.figure(figsize=(6, 5))
-plt.scatter(tsne_data[cohort_mask, 0], tsne_data[cohort_mask, 1], s=16, alpha=0.7, label='Cohort', color='lightgrey')
-plt.scatter(tsne_data[like_me_mask, 0], tsne_data[like_me_mask, 1], s=28, alpha=0.9, label='Like-me patients', color='slategrey')
-plt.scatter(tsne_data[patient_mask, 0], tsne_data[patient_mask, 1], s=80, marker='x', linewidths=2, label='Patient', color='firebrick')
+plt.scatter(two_dim[cohort_mask, 0], two_dim[cohort_mask, 1], s=16, alpha=0.7, label='Cohort', color='lightgrey')
+plt.scatter(two_dim[like_me_mask, 0], two_dim[like_me_mask, 1], s=28, alpha=0.9, label='Like-Me Sub-Cohort', color='slategrey')
+plt.scatter(two_dim[patient_mask, 0], two_dim[patient_mask, 1], s=80, marker='x', linewidths=2, label='Example Patient', color='firebrick')
 plt.legend(loc='best', frameon=False)
-plt.xlabel('TSNE-1'); plt.ylabel('TSNE-2')
+plt.xlabel('UMAP-1'); plt.ylabel('UMAP-2')
 plt.tight_layout()
-plt.savefig("./figs/TSNE", dpi=300)
-plt.show()
+plt.savefig("./figs/UMAP_2", dpi=300)
