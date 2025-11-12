@@ -126,9 +126,14 @@ characteristics are not very similar to the reference cohort and therefore shoul
 <br>
 <br>
 
-**Figure 2B.** UMAP representation in 2-dimensions of the 9-dimensional clinical characteristics for each subject in the reference cohort.
+**Figure 2B.** UMAP representation in 2-dimensions of the 9-dimensional clinical characteristics for each subject in the reference cohort.  
+**Best UMAP hyperparameters:**
 
-<img src="figs\UMAP.png" width=800>
+<img src="figs\UMAP_1.png" width=800>
+
+**2nd Best UMAP hyperparameters:**
+
+<img src="figs\UMAP_2.png" width=800>
 
 *Clinical interpretation: This is a 2-dimensional representation of my patient's clinical characteristics. The axes do not really mean anything, they are a summarization of the 
 9 other variables we have on my patient. I can see that the like-me sub-cohort is very similar to my patient, because they are all close together in 2-dimensional space.*  

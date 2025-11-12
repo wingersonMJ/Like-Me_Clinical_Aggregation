@@ -6,7 +6,7 @@ import random
 import numpy as np
 import pandas as pd
 import time
-import datetime as datetime
+from datetime import datetime
 pd.set_option("display.max_columns", None)
 
 from tableone import TableOne
@@ -14,7 +14,7 @@ from tableone import TableOne
 import matplotlib.pyplot as plt
 
 # get cohort
-"X.head()
+X.head()
 X.describe()
 
 # get outcomes 
@@ -34,9 +34,24 @@ def mahalanobis(x=None, data=None, cov=None):
 
 ########
 # for loop for each subject to be used as the patient 
-like_me_performance = pd.DataFrame(columns=['pt_mahalanobis_distance_from_cohort', 'mean_euclid_dist_to_pt', 'like_me_value', 'lm_subj_diff_sx', 'lm_mean_subj_diff_sx', 'lm_median_subj_diff_sx', 'nlm_subj_diff_sx', 'nlm_mean_subj_diff_sx', 'nlm_median_subj_diff_sx'])
+like_me_performance = pd.DataFrame(columns=[
+        'pt_mahalanobis_distance_from_cohort',
+        'mean_euclid_dist_to_pt', 
+        'like_me_value', 
+        'lm_mean_subj_diff_sx', 
+        'lm_median_subj_diff_sx', 
+        'lm_mean_euclid_dist_to_pt',
+        'nlm_mean_subj_diff_sx', 
+        'nlm_median_subj_diff_sx',
+        'nlm_mean_euclid_dist_to_pt',
+        'lm_mean_subj_diff_rtp', 
+        'lm_median_subj_diff_rtp',
+        'nlm_mean_subj_diff_rtp', 
+        'nlm_median_subj_diff_rtp' 
+    ])
 
 start = time.time()
+iteration = 0
 for idx, _ in X.iterrows():
 
     # get patient x and y
@@ -56,77 +71,117 @@ for idx, _ in X.iterrows():
         cohort.loc[i, "euclidean_distance"] = euclid_dist
 
     # get mean of euclid dist
-    mean_euclid_dist_to_pt = cohort['euclidean_distance'].mean()
+    mean_euclid_dist_to_pt = np.nanmean(cohort['euclidean_distance'])
 
     ###########################
     # Get like-me cohort 
     like_me_value = (10 - pt_mahalanobis_distance_from_cohort)*10
-    like_me_value = np.round(like_me_value, decimals=0)
+    like_me_value = np.round(like_me_value, decimals=0).astype(int)
     like_me_by = 'euclidean_distance'
     like_me_idx = cohort[like_me_by].nsmallest(like_me_value).index
     like_me_cohort = cohort.loc[like_me_idx]
     like_me_y = y.loc[like_me_idx]
 
-    not_like_me_cohort = cohort.loc[~like_me_idx]
-    not_like_me_y = y.loc[~like_me_idx]
+    not_like_me_cohort = cohort.drop(index=like_me_idx)
+    not_like_me_y = y.drop(index=like_me_idx)
 
     ##########################
-    # Get differences between the patient and the like-me cohort in y's
-    # Mean difference between the patient y and the like-me cohort individual values
-    lm_subj_diff_sx = like_me_y['time_sx'] - patient_y['time_sx']
-    lm_subj_diff_sx = lm_subj_diff_sx.mean()
-
+    # time sx res
+    ########################
     # Difference between the patient y and the mean of the like-me cohort values
-    lm_mean_subj_diff_sx = like_me_y['time_sx'].mean() - patient_y['time_sx']
+    lm_mean_subj_diff_sx = np.nanmean(like_me_y['time_sx']) - patient_y['time_sx']
     
     # Difference between the patient y and the median of the like-me cohort values
-    lm_median_subj_diff_sx = like_me_y['time_sx'].median() - patient_y['time_sx']
+    lm_median_subj_diff_sx = np.nanmedian(like_me_y['time_sx']) - patient_y['time_sx']
+
+    # euclid dist to pt
+    for i, row in like_me_cohort.iterrows():
+        like_me_cohort['lm_euclid_dist'] = np.linalg.norm(row - patient) 
+    lm_mean_euclid_dist_to_pt = np.nanmean(like_me_cohort['lm_euclid_dist'])
 
     ##########################
-    # Get differences between the patient and the NOT-like-me cohort in y's
-    # Mean difference between the patient y and the like-me cohort individual values
-    nlm_subj_diff_sx = not_like_me_y['time_sx'] - patient_y['time_sx']
-    nlm_subj_diff_sx = lm_subj_diff_sx.mean()
-
     # Difference between the patient y and the mean of the like-me cohort values
-    nlm_mean_subj_diff_sx = not_like_me_y['time_sx'].mean() - patient_y['time_sx']
+    nlm_mean_subj_diff_sx = np.nanmean(not_like_me_y['time_sx']) - patient_y['time_sx']
     
     # Difference between the patient y and the median of the like-me cohort values
-    nlm_median_subj_diff_sx = not_like_me_y['time_sx'].median() - patient_y['time_sx']
+    nlm_median_subj_diff_sx = np.nanmedian(not_like_me_y['time_sx']) - patient_y['time_sx']
+
+    # euclid dist to pt
+    for i, row in not_like_me_cohort.iterrows():
+        not_like_me_cohort['nlm_euclid_dist'] = np.linalg.norm(row - patient) 
+    nlm_mean_euclid_dist_to_pt = np.nanmean(not_like_me_cohort['nlm_euclid_dist'])
+
+    ##########################
+    # time rtp!
+    #######################
+    # Difference between the patient y and the mean of the like-me cohort values
+    lm_mean_subj_diff_rtp = np.nanmean(like_me_y['time_rtp']) - patient_y['time_rtp']
+    
+    # Difference between the patient y and the median of the like-me cohort values
+    lm_median_subj_diff_rtp = np.nanmedian(like_me_y['time_rtp']) - patient_y['time_rtp']
+
+    ##########################
+    # Difference between the patient y and the mean of the like-me cohort values
+    nlm_mean_subj_diff_rtp = np.nanmean(not_like_me_y['time_rtp']) - patient_y['time_rtp']
+    
+    # Difference between the patient y and the median of the like-me cohort values
+    nlm_median_subj_diff_rtp = np.nanmedian(not_like_me_y['time_rtp']) - patient_y['time_rtp']
 
     # get the important metrics
     iteration_performance = {
         'pt_mahalanobis_distance_from_cohort': pt_mahalanobis_distance_from_cohort, 
         'mean_euclid_dist_to_pt': mean_euclid_dist_to_pt, 
         'like_me_value': like_me_value, 
-        'lm_subj_diff_sx': lm_subj_diff_sx, 
         'lm_mean_subj_diff_sx': lm_mean_subj_diff_sx, 
         'lm_median_subj_diff_sx': lm_median_subj_diff_sx, 
-        'nlm_subj_diff_sx': nlm_subj_diff_sx, 
+        'lm_mean_euclid_dist_to_pt': lm_mean_euclid_dist_to_pt,
         'nlm_mean_subj_diff_sx': nlm_mean_subj_diff_sx, 
-        'nlm_median_subj_diff_sx': nlm_median_subj_diff_sx
+        'nlm_median_subj_diff_sx': nlm_median_subj_diff_sx,
+        'nlm_mean_euclid_dist_to_pt': nlm_mean_euclid_dist_to_pt,
+        'lm_mean_subj_diff_rtp': lm_mean_subj_diff_rtp, 
+        'lm_median_subj_diff_rtp': lm_median_subj_diff_rtp,
+        'nlm_mean_subj_diff_rtp': nlm_mean_subj_diff_rtp, 
+        'nlm_median_subj_diff_rtp': nlm_median_subj_diff_rtp 
     }
 
     # save
     like_me_performance.loc[len(like_me_performance)] = iteration_performance
-    current_time = datetime.now().strftime("%Y-%m-%d")
-    save_name = f"../Data/like_me_performance{current_time}.csv"
-    like_me_performance.to_csv(save_name)
+    like_me_performance.to_csv("../Data/like_me_performance.csv")
+    print(f"iteration finished: {iteration}")
+    iteration += 1
 end = time.time()
 print(f"{(end-start)/60} minutes to run")
 
-
 ################
 # load back in the nresults
-final_performance = pd.read_csv(save_name) # replace with actual file name: "../Data/like_me_performance{date}.csv"
+final_performance = pd.read_csv("../Data/like_me_performance.csv") # replace with actual file name: "../Data/like_me_performance{date}.csv"
 
 final_performance.head()
 
+final_performance.columns
+
+#################
+# add squared diff
+squared_cols = ['lm_mean_subj_diff_sx',  'nlm_mean_subj_diff_sx', 'lm_median_subj_diff_sx', 'nlm_median_subj_diff_sx', 'lm_mean_subj_diff_rtp',  'nlm_mean_subj_diff_rtp', 'lm_median_subj_diff_rtp', 'nlm_median_subj_diff_rtp']
+for col in squared_cols:
+    final_performance[f"{col}_sq"] = (final_performance[col])**2
+    final_performance[f"{col}_sqsqrt"] = np.sqrt(final_performance[f"{col}_sq"])
+
 ###############
 # summary stats
-columns=['pt_mahalanobis_distance_from_cohort', 'mean_euclid_dist_to_pt', 'like_me_value', 'lm_subj_diff_sx', 'lm_mean_subj_diff_sx', 'lm_median_subj_diff_sx', 'nlm_subj_diff_sx', 'nlm_mean_subj_diff_sx', 'nlm_median_subj_diff_sx']
-mytable = TableOne(final_performance, columns=columns, continuous=columns, pval=True)
-print(mytable.tabulate(tablefmt = "fancy_grid"))
+columns=['like_me_value', 'pt_mahalanobis_distance_from_cohort', 'mean_euclid_dist_to_pt', 'lm_mean_euclid_dist_to_pt', 'nlm_mean_euclid_dist_to_pt', 'lm_mean_subj_diff_sx', 'nlm_mean_subj_diff_sx', 'lm_median_subj_diff_sx', 'nlm_median_subj_diff_sx', 'lm_mean_subj_diff_sx_sq',  'nlm_mean_subj_diff_sx_sq', 'lm_median_subj_diff_sx_sq', 'nlm_median_subj_diff_sx_sq', 'lm_mean_subj_diff_sx_sqsqrt',  'nlm_mean_subj_diff_sx_sqsqrt', 'lm_median_subj_diff_sx_sqsqrt', 'nlm_median_subj_diff_sx_sqsqrt', 'lm_mean_subj_diff_rtp', 'nlm_mean_subj_diff_rtp', 'lm_median_subj_diff_rtp', 'nlm_median_subj_diff_rtp', 'lm_mean_subj_diff_rtp_sq',  'nlm_mean_subj_diff_rtp_sq', 'lm_median_subj_diff_rtp_sq', 'nlm_median_subj_diff_rtp_sq', 'lm_mean_subj_diff_rtp_sqsqrt',  'nlm_mean_subj_diff_rtp_sqsqrt', 'lm_median_subj_diff_rtp_sqsqrt', 'nlm_median_subj_diff_rtp_sqsqrt']
+
+mytable = TableOne(final_performance, columns=columns, continuous=columns, pval=False)
+print(mytable.tabulate(tablefmt = "github"))
+
+# means and 95% CI's
+confidence_intervals = {}
+for var_name in columns: 
+    confidence_intervals[f'{var_name}_upper'] = np.nanmean(final_performance[var_name]) + (1.96 * (np.std(final_performance[var_name]) / (np.sqrt(sum(~np.isnan(final_performance[var_name]))) )) )
+    confidence_intervals[f'{var_name}_lower'] = np.nanmean(final_performance[var_name]) - (1.96 * (np.std(final_performance[var_name]) / (np.sqrt(sum(~np.isnan(final_performance[var_name]))) )) )
+    confidence_intervals[f'{var_name}_mean'] = np.nanmean(final_performance[var_name])
+    print(f"{var_name}")
+    print(f"    {confidence_intervals[f'{var_name}_mean']:.2f} [{confidence_intervals[f'{var_name}_upper']:.2f}, {confidence_intervals[f'{var_name}_lower']:.2f}]\n")
 
 ###############
 # plots
