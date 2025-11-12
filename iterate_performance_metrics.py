@@ -12,6 +12,7 @@ pd.set_option("display.max_columns", None)
 from tableone import TableOne
 
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 # get cohort
 X.head()
@@ -52,6 +53,7 @@ like_me_performance = pd.DataFrame(columns=[
 
 start = time.time()
 iteration = 0
+feature_cols = X.columns
 for idx, _ in X.iterrows():
 
     # get patient x and y
@@ -67,7 +69,7 @@ for idx, _ in X.iterrows():
 
     # get each subject's euclidean distance from patient
     for i, row in cohort.iterrows():
-        euclid_dist = np.linalg.norm(row - patient) 
+        euclid_dist = np.linalg.norm(row[feature_cols].to_numpy() - patient[feature_cols].to_numpy()) 
         cohort.loc[i, "euclidean_distance"] = euclid_dist
 
     # get mean of euclid dist
@@ -96,7 +98,7 @@ for idx, _ in X.iterrows():
 
     # euclid dist to pt
     for i, row in like_me_cohort.iterrows():
-        like_me_cohort['lm_euclid_dist'] = np.linalg.norm(row - patient) 
+        like_me_cohort.loc[i, 'lm_euclid_dist'] = np.linalg.norm(row[feature_cols].to_numpy() - patient[feature_cols].to_numpy()) 
     lm_mean_euclid_dist_to_pt = np.nanmean(like_me_cohort['lm_euclid_dist'])
 
     ##########################
@@ -108,7 +110,7 @@ for idx, _ in X.iterrows():
 
     # euclid dist to pt
     for i, row in not_like_me_cohort.iterrows():
-        not_like_me_cohort['nlm_euclid_dist'] = np.linalg.norm(row - patient) 
+        not_like_me_cohort.loc[i, 'nlm_euclid_dist'] = np.linalg.norm(row[feature_cols].to_numpy() - patient[feature_cols].to_numpy()) 
     nlm_mean_euclid_dist_to_pt = np.nanmean(not_like_me_cohort['nlm_euclid_dist'])
 
     ##########################
@@ -158,8 +160,6 @@ final_performance = pd.read_csv("../Data/like_me_performance.csv") # replace wit
 
 final_performance.head()
 
-final_performance.columns
-
 #################
 # add squared diff
 squared_cols = ['lm_mean_subj_diff_sx',  'nlm_mean_subj_diff_sx', 'lm_median_subj_diff_sx', 'nlm_median_subj_diff_sx', 'lm_mean_subj_diff_rtp',  'nlm_mean_subj_diff_rtp', 'lm_median_subj_diff_rtp', 'nlm_median_subj_diff_rtp']
@@ -184,4 +184,78 @@ for var_name in columns:
     print(f"    {confidence_intervals[f'{var_name}_mean']:.2f} [{confidence_intervals[f'{var_name}_upper']:.2f}, {confidence_intervals[f'{var_name}_lower']:.2f}]\n")
 
 ###############
-# plots
+## plots
+# hist pt_mahalanobis_distance_from_cohort
+fig, ax = plt.subplots(figsize=(6,4))
+ax.hist(final_performance['pt_mahalanobis_distance_from_cohort'], bins='auto', density=True, alpha=0.4, edgecolor='white', color='grey', label='Histogram')
+sns.kdeplot(x=final_performance['pt_mahalanobis_distance_from_cohort'], ax=ax, fill=False, alpha=0.9, color='dimgrey', linewidth=1.8, label='Kernel Density Estimation')
+ax.set_xlabel("Mahalanobis Distance from Cohort")
+ax.set_ylabel("Density")
+ax.legend(frameon=False)
+plt.tight_layout()
+plt.show()
+
+# hist like_me_value
+fig, ax = plt.subplots(figsize=(6,4))
+ax.hist(final_performance['like_me_value'], bins=20, density=True, alpha=0.4, edgecolor='white', color='grey', label='Histogram')
+sns.kdeplot(x=final_performance['like_me_value'], ax=ax, fill=False, alpha=0.9, color='dimgrey', linewidth=1.8, label='Kernel Density Estimation')
+ax.set_xlabel("Size of Like-Me Sub-Cohort (n)")
+ax.set_ylabel("Density")
+ax.legend(frameon=False)
+plt.tight_layout()
+plt.show()
+
+# hist lm_mean_euclid_dist_to_pt and nlm_mean_euclid_dist_to_pt
+fig, ax = plt.subplots(figsize=(6,4))
+ax.hist(final_performance['lm_mean_euclid_dist_to_pt'], bins=20, density=True, alpha=0.4, edgecolor='white', color='slategrey', label='Histogram')
+ax.hist(final_performance['nlm_mean_euclid_dist_to_pt'], bins=20, density=True, alpha=0.4, edgecolor='white', color='lightgrey', label='Histogram')
+ax.set_xlabel("Euclidean Distance to Patient (similarity confirmation)")
+ax.set_ylabel("Density")
+ax.legend(frameon=False)
+plt.tight_layout()
+plt.show()
+
+# kde lm_mean_subj_diff_sx and nlm_mean_subj_diff_sx
+fig, ax = plt.subplots(figsize=(6,4))
+sns.kdeplot(x=(final_performance['lm_mean_subj_diff_sx']*-1), ax=ax, fill=True, alpha=0.7, color='lightgrey', linewidth=1.8, label='Reference Cohort')
+sns.kdeplot(x=(final_performance['nlm_mean_subj_diff_sx']*-1), ax=ax, fill=True, alpha=0.25, color='slategrey', linewidth=1.8, label='Like-Me Sub-Cohort')
+ax.set_xlabel("Difference between actual patient Sx Time and mean of Like-Me Sub-Cohort")
+ax.set_ylabel("Density")
+ax.legend(frameon=False)
+plt.tight_layout()
+plt.show()
+
+# hist lm_median_subj_diff_sx and nlm_median_subj_diff_sx
+fig, ax = plt.subplots(figsize=(6,4))
+sns.kdeplot(x=(final_performance['lm_median_subj_diff_sx']*-1), ax=ax, fill=True, alpha=0.7, color='lightgrey', linewidth=1.8, label='Reference Cohort')
+sns.kdeplot(x=(final_performance['nlm_median_subj_diff_sx']*-1), ax=ax, fill=True, alpha=0.25, color='slategrey', linewidth=1.8, label='Like-Me Sub-Cohort')
+ax.set_xlabel("Difference between actual patient Sx Time and median of Like-Me Sub-Cohort")
+ax.set_ylabel("Density")
+ax.legend(frameon=False)
+plt.tight_layout()
+plt.show()
+
+# hist lm_mean_subj_diff_rtp and nlm_mean_subj_diff_rtp
+fig, ax = plt.subplots(figsize=(6,4))
+sns.kdeplot(x=(final_performance['lm_mean_subj_diff_rtp']*-1), ax=ax, fill=True, alpha=0.7, color='lightgrey', linewidth=1.8, label='Reference Cohort')
+sns.kdeplot(x=(final_performance['nlm_mean_subj_diff_rtp']*-1), ax=ax, fill=True, alpha=0.25, color='slategrey', linewidth=1.8, label='Like-Me Sub-Cohort')
+ax.set_xlabel("Difference between actual patient Time to RTP and mean of Like-Me Sub-Cohort")
+ax.set_ylabel("Density")
+ax.legend(frameon=False)
+plt.tight_layout()
+plt.show()
+
+# hist lm_median_subj_diff_rtp and nlm_median_subj_diff_rtp
+fig, ax = plt.subplots(figsize=(6,4))
+sns.kdeplot(x=(final_performance['lm_median_subj_diff_rtp']*-1), ax=ax, fill=True, alpha=0.7, color='lightgrey', linewidth=1.8, label='Reference Cohort')
+sns.kdeplot(x=(final_performance['nlm_median_subj_diff_rtp']*-1), ax=ax, fill=True, alpha=0.25, color='slategrey', linewidth=1.8, label='Like-Me Sub-Cohort')
+ax.set_xlabel("Difference between actual patient Time to RTP and median of Like-Me Sub-Cohort")
+ax.set_ylabel("Density")
+ax.legend(frameon=False)
+plt.tight_layout()
+plt.show()
+
+
+
+
+## Double-check euclidean distance too
