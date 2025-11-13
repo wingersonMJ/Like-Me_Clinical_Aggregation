@@ -124,7 +124,6 @@ unique aspects to their clinical presentation that leave them further outside th
 even further to the right, such as having a Mahalanobis distance greater than 6 or 7, then I might wonder if my patient's clinical presentation is too unique - if their 
 characteristics are not very similar to the reference cohort and therefore should not be compared to anyone in the cohort using the like-me approach.*  
 <br>
-<br>
 
 **Figure 2B.** UMAP representation in 2-dimensions of the 9-dimensional clinical characteristics for each subject in the reference cohort.  
 **Best UMAP hyperparameters:**
@@ -194,17 +193,47 @@ like-me sub-cohort.
 
 *Interpretation: As expected, the subjects in the like-me sub-cohort are closer and more similar to the patient than the subjects who are not in the like-me sub-cohort (really just a sanity check).* 
 
+## Comparing Demographics:
+
+I then compared demographics between the like-me sub-cohort and all other subjects in the reference cohort. The objective of similarity matching is to minimize the difference between various characteristics of the patient  and the characteristics found within your like-me sub-cohort. Thus, I took the patient's age, time since injury, and symptom severity score for each iteration and subtracted (1) their sub-cohort's mean values for these features, and (2) the remaining reference cohort's mean values. The difference scores were then compared across all iterations to see if the mean for the like-me sub-cohort was closer to the actual patient value than the mean for the remaining reference cohort across all iterations. 
+
+### Age:
+
+**Figure 7.** The absolute difference in age between the patient and the group mean (like-me sub-cohort vs remaining reference cohort subjects), after iterating through the entire reference cohort and using each subject as an 'example patient'. 
+
+<img src="figs\performance_age.png" width=800>  
+
+*Interpretation: The difference between the cohort mean age and the actual patient age tends to be smaller for the like-me sub-cohort compared to all other reference subjects. This shows us that the like-me sub-cohort really is 'more similar' to our patient's age than the remaining reference subjects.* 
+<br>
+
+### Time Since Injury:
+
+**Figure 8.** The absolute difference in time since injury between the patient and the group mean (like-me sub-cohort vs remaining reference cohort subjects), after iterating through the entire reference cohort and using each subject as an 'example patient'. 
+
+<img src="figs\performance_time_since_injury.png" width=800>  
+
+*Interpretation: The difference between the cohort mean time since injury and the actual patient time since injury tends to be smaller for the like-me sub-cohort compared to all other reference subjects. This shows us that the like-me sub-cohort really is 'more similar' to our patient's time since injury than the remaining reference subjects.* 
+<br>
+
+### Symptom Severity (HBI score):
+
+**Figure 9.** The absolute difference in symptom severity between the patient and the group mean (like-me sub-cohort vs remaining reference cohort subjects), after iterating through the entire reference cohort and using each subject as an 'example patient'. 
+
+<img src="figs\performance_hbi.png" width=800>  
+
+*Interpretation: The difference between the cohort mean symptom severity and the actual patient symptom severity tends to be smaller for the like-me sub-cohort compared to all other reference subjects. This shows us that the like-me sub-cohort really is 'more similar' to our patient's symptom severity than the remaining reference subjects.* 
+
 ## Exploring Recovery Outcomes:
 
 ### Time to Symptom Resolution:
 
-**Figure 7A.** Raw differences in time to symptom resolution for the patient vs their sub-cohort and the patient vs the remaining reference cohort subjects, after iterating through the reference cohort and using each subject as an 'example patient'.  
+**Figure 10A.** Raw differences in time to symptom resolution for the patient vs their sub-cohort and the patient vs the remaining reference cohort subjects, after iterating through the reference cohort and using each subject as an 'example patient'.  
 
 <img src="figs\raw_time_sx_diff.png" width=800>
 <br>
 <br>
 
-**Figure 7B.** |Absolute value| differences in time to symptom resolution for the patient vs their sub-cohort and the patient vs the remaining reference cohort subjects, after iterating through the reference cohort and using each subject as an 'example patient'.  
+**Figure 10B.** |Absolute value| differences in time to symptom resolution for the patient vs their sub-cohort and the patient vs the remaining reference cohort subjects, after iterating through the reference cohort and using each subject as an 'example patient'.  
 
 <img src="figs\abs_time_sx_diff.png" width=800>  
 
@@ -213,13 +242,13 @@ time to symptom resolution (difference value closer to zero) than the mean of th
 
 ### Time to Return to Play (RTP):
 
-**Figure 8A.** Raw differences in time to return to play (RTP) for the patient vs their sub-cohort and the patient vs the remaining reference cohort subjects, after iterating through the reference cohort and using each subject as an 'example patient'.  
+**Figure 11A.** Raw differences in time to return to play (RTP) for the patient vs their sub-cohort and the patient vs the remaining reference cohort subjects, after iterating through the reference cohort and using each subject as an 'example patient'.  
 
 <img src="figs\raw_time_rtp_diff.png" width=800>
 <br>
 <br>
 
-**Figure 8B.** |Absolute value| differences in time to RTP for the patient vs their sub-cohort and the patient vs the remaining reference cohort subjects, after iterating through the reference cohort and using each subject as an 'example patient'.  
+**Figure 11B.** |Absolute value| differences in time to RTP for the patient vs their sub-cohort and the patient vs the remaining reference cohort subjects, after iterating through the reference cohort and using each subject as an 'example patient'.  
 
 <img src="figs\abs_time_rtp_diff.png" width=800>  
 
@@ -228,7 +257,7 @@ time to symptom resolution (difference value closer to zero) than the mean of th
 
 ### Narative explanation:
 
-The average size of the like-me cohort was 55.09 subjects (95% CI: 54.5 to 55.7) and ranged from 37 to 78 subjects, after iterating 
+The average size of the like-me cohort was 55.1 subjects (95% CI: 54.5 to 55.7) and ranged from 37 to 78 subjects, after iterating 
 through each subject in the reference cohort as the "example patient".  
 
 After iterating through and using all subjects in the reference cohort as the "example patient", the mean Euclidean distance from each
@@ -238,9 +267,12 @@ closer to the Like-Me Sub-Cohort's mean time to symptom resolution and mean time
  (symptom resolution difference: 9.72 [10.80, 8.64] vs 11.94 [13.10, 10.77] days; p<0.001; RTP difference: 15.73 [17.22, 14.24] vs 
 18.41 [20.00, 16.82] days; p<0.001).  
 
-| Varaible                                          | Like-Me Sub-Cohort   | Remaining Reference Cohort | P-value |
-| ------------------------------------------------- | :------------------: | :------------------------: | ------: | 
-|                                                   | Mean [95% CI]        | Mean [95% CI]              |         |
-| Euclidean distance to the patient                 | 0.53 [0.54, 0.52]    | 1.06 [1.06, 1.05]          | <0.001  |
-| Symptom Resolution Absolute Difference: patient - group | 9.72 [10.80, 8.64]   | 11.94 [13.10, 10.77]       | <0.001  |
-| RTP Absolute Difference: patient - group                | 15.73 [17.22, 14.24] | 18.41 [20.00, 16.82]       | <0.001  |
+| Varaible                                                          | Like-Me Sub-Cohort   | Remaining Reference Cohort | P-value | Figure for Visualizing Results | 
+| ----------------------------------------------------------------- | :------------------: | :------------------------: | ------: | :----------------------------: |
+|                                                                   | Mean [95% CI]        | Mean [95% CI]              |         |                                |
+| Euclidean distance to the patient                                 | 0.53 [0.54, 0.52]    | 1.06 [1.06, 1.05]          | <0.001  | Figure 6                       |
+| Age Absolute Difference: patient - group                          | 1.33 [1.42, 1.25]    | 1.98 [2.10, 1.86]          | <0.001  | Figure 7                       |
+| Time Since Injury Absolute Difference: patient - group            | 2.36 [2.50, 2.22]    | 4.80 [5.05, 4.55]          | <0.001  | Figure 8                       |
+| Symptom Severity (HBI Score) Absolute Difference: patient - group | 6.07 [6.46, 5.69]    | 11.32 [11.96, 10.69]       | <0.016  | Figure 9                       |
+| Symptom Resolution Absolute Difference: patient - group           | 9.72 [10.80, 8.64]   | 11.94 [13.10, 10.77]       | <0.001  | Figure 10B                     |
+| RTP Absolute Difference: patient - group                          | 15.73 [17.22, 14.24] | 18.41 [20.00, 16.82]       | <0.001  | Figure 11B                     |

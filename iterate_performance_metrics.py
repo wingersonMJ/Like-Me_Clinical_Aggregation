@@ -19,6 +19,7 @@ import seaborn as sns
 # get cohort
 X.head()
 X.describe()
+X.columns
 
 # get outcomes 
 y.head()
@@ -50,7 +51,13 @@ like_me_performance = pd.DataFrame(columns=[
         'lm_mean_subj_diff_rtp', 
         'lm_median_subj_diff_rtp',
         'nlm_mean_subj_diff_rtp', 
-        'nlm_median_subj_diff_rtp' 
+        'nlm_median_subj_diff_rtp',
+        'lm_age_diff',
+        'nlm_age_diff',
+        'lm_time_since_inj_diff',
+        'nlm_time_since_inj_diff',
+        'lm_hbi_diff',
+        'nlm_hbi_diff'
     ])
 
 start = time.time()
@@ -88,6 +95,36 @@ for idx, _ in X.iterrows():
 
     not_like_me_cohort = cohort.drop(index=like_me_idx)
     not_like_me_y = y.drop(index=like_me_idx)
+
+    #######################
+    # Demographcis - just doing Age, Time since Injury, and HBI score
+    #######################
+    # un-min/max scale HBI, time since inj, age
+    lm_original = {}
+    nlm_original = {}
+    lm_original['hbi'] = (like_me_cohort['HBI_total'] * X_ranges['HBI_total']) + X_mins['HBI_total']
+    nlm_original['hbi'] = (not_like_me_cohort['HBI_total'] * X_ranges['HBI_total']) + X_mins['HBI_total']
+
+    lm_original['time'] = (like_me_cohort['time_since_injury'] * X_ranges['time_since_injury']) + X_mins['time_since_injury']
+    nlm_original['time'] = (not_like_me_cohort['time_since_injury'] * X_ranges['time_since_injury']) + X_mins['time_since_injury']
+
+    lm_original['age'] = (like_me_cohort['age'] * X_ranges['age']) + X_mins['age']
+    nlm_original['age'] = (not_like_me_cohort['age'] * X_ranges['age']) + X_mins['age']
+
+    patient_original = {}
+    patient_original['age'] = (patient['age'] * X_ranges['age']) + X_mins['age']
+    patient_original['hbi'] = (patient['HBI_total'] * X_ranges['HBI_total']) + X_mins['HBI_total']
+    patient_original['time'] = (patient['time_since_injury'] * X_ranges['time_since_injury']) + X_mins['time_since_injury']
+
+    # diffs 
+    lm_age_diff = np.nanmean(lm_original['age']) - patient_original['age'] 
+    nlm_age_diff = np.nanmean(nlm_original['age']) - patient_original['age']
+
+    lm_time_since_inj_diff = np.nanmean(lm_original['time']) - patient_original['time']
+    nlm_time_since_inj_diff = np.nanmean(nlm_original['time']) - patient_original['time']
+    
+    lm_hbi_diff = np.nanmean(lm_original['hbi']) - patient_original['hbi']
+    nlm_hbi_diff = np.nanmean(nlm_original['hbi']) - patient_original['hbi']
 
     ##########################
     # time sx res
@@ -145,7 +182,13 @@ for idx, _ in X.iterrows():
         'lm_mean_subj_diff_rtp': lm_mean_subj_diff_rtp, 
         'lm_median_subj_diff_rtp': lm_median_subj_diff_rtp,
         'nlm_mean_subj_diff_rtp': nlm_mean_subj_diff_rtp, 
-        'nlm_median_subj_diff_rtp': nlm_median_subj_diff_rtp 
+        'nlm_median_subj_diff_rtp': nlm_median_subj_diff_rtp,
+        'lm_age_diff': lm_age_diff,
+        'nlm_age_diff': nlm_age_diff,
+        'lm_time_since_inj_diff': lm_time_since_inj_diff,
+        'nlm_time_since_inj_diff': nlm_time_since_inj_diff,
+        'lm_hbi_diff': lm_hbi_diff,
+        'nlm_hbi_diff': nlm_hbi_diff
     }
 
     # save
@@ -164,36 +207,158 @@ final_performance.head()
 
 #################
 # add squared diff
-squared_cols = ['lm_mean_subj_diff_sx',  'nlm_mean_subj_diff_sx', 'lm_median_subj_diff_sx', 'nlm_median_subj_diff_sx', 'lm_mean_subj_diff_rtp',  'nlm_mean_subj_diff_rtp', 'lm_median_subj_diff_rtp', 'nlm_median_subj_diff_rtp']
+squared_cols = [
+    'lm_mean_subj_diff_sx',  
+    'nlm_mean_subj_diff_sx', 
+    'lm_median_subj_diff_sx', 
+    'nlm_median_subj_diff_sx', 
+    'lm_mean_subj_diff_rtp',  
+    'nlm_mean_subj_diff_rtp', 
+    'lm_median_subj_diff_rtp', 
+    'nlm_median_subj_diff_rtp',
+    'lm_age_diff',
+    'nlm_age_diff',
+    'lm_time_since_inj_diff',
+    'nlm_time_since_inj_diff',
+    'lm_hbi_diff',
+    'nlm_hbi_diff'
+    ]
 for col in squared_cols:
     final_performance[f"{col}_sq"] = (final_performance[col])**2
     final_performance[f"{col}_sqsqrt"] = np.sqrt(final_performance[f"{col}_sq"])
 
 ###############
 # summary stats
-columns=['like_me_value', 'pt_mahalanobis_distance_from_cohort', 'mean_euclid_dist_to_pt', 'lm_mean_euclid_dist_to_pt', 'nlm_mean_euclid_dist_to_pt', 'lm_mean_subj_diff_sx', 'nlm_mean_subj_diff_sx', 'lm_median_subj_diff_sx', 'nlm_median_subj_diff_sx', 'lm_mean_subj_diff_sx_sq',  'nlm_mean_subj_diff_sx_sq', 'lm_median_subj_diff_sx_sq', 'nlm_median_subj_diff_sx_sq', 'lm_mean_subj_diff_sx_sqsqrt',  'nlm_mean_subj_diff_sx_sqsqrt', 'lm_median_subj_diff_sx_sqsqrt', 'nlm_median_subj_diff_sx_sqsqrt', 'lm_mean_subj_diff_rtp', 'nlm_mean_subj_diff_rtp', 'lm_median_subj_diff_rtp', 'nlm_median_subj_diff_rtp', 'lm_mean_subj_diff_rtp_sq',  'nlm_mean_subj_diff_rtp_sq', 'lm_median_subj_diff_rtp_sq', 'nlm_median_subj_diff_rtp_sq', 'lm_mean_subj_diff_rtp_sqsqrt',  'nlm_mean_subj_diff_rtp_sqsqrt', 'lm_median_subj_diff_rtp_sqsqrt', 'nlm_median_subj_diff_rtp_sqsqrt']
+columns=[
+    'like_me_value', 
+    'pt_mahalanobis_distance_from_cohort', 
+
+    'mean_euclid_dist_to_pt', 
+    'lm_mean_euclid_dist_to_pt', 
+    'nlm_mean_euclid_dist_to_pt', 
+
+    'lm_mean_subj_diff_sx', 
+    'nlm_mean_subj_diff_sx', 
+    'lm_mean_subj_diff_sx_sq',  
+    'nlm_mean_subj_diff_sx_sq', 
+    'lm_mean_subj_diff_sx_sqsqrt',  
+    'nlm_mean_subj_diff_sx_sqsqrt', 
+
+    'lm_median_subj_diff_sx',
+    'nlm_median_subj_diff_sx', 
+    'lm_median_subj_diff_sx_sq', 
+    'nlm_median_subj_diff_sx_sq',
+    'lm_median_subj_diff_sx_sqsqrt', 
+    'nlm_median_subj_diff_sx_sqsqrt', 
+
+    'lm_mean_subj_diff_rtp', 
+    'nlm_mean_subj_diff_rtp', 
+    'lm_mean_subj_diff_rtp_sq',  
+    'nlm_mean_subj_diff_rtp_sq', 
+    'lm_mean_subj_diff_rtp_sqsqrt',  
+    'nlm_mean_subj_diff_rtp_sqsqrt', 
+
+    'lm_median_subj_diff_rtp', 
+    'nlm_median_subj_diff_rtp', 
+    'lm_median_subj_diff_rtp_sq', 
+    'nlm_median_subj_diff_rtp_sq', 
+    'lm_median_subj_diff_rtp_sqsqrt', 
+    'nlm_median_subj_diff_rtp_sqsqrt',
+
+    'lm_age_diff',
+    'lm_age_diff_sq',
+    'lm_age_diff_sqsqrt',
+
+    'nlm_age_diff',
+    'nlm_age_diff_sq',
+    'nlm_age_diff_sqsqrt',
+
+    'lm_time_since_inj_diff',
+    'lm_time_since_inj_diff_sq',
+    'lm_time_since_inj_diff_sqsqrt',
+
+    'nlm_time_since_inj_diff',
+    'nlm_time_since_inj_diff_sq',
+    'nlm_time_since_inj_diff_sqsqrt',
+
+    'lm_hbi_diff',
+    'lm_hbi_diff_sq',
+    'lm_hbi_diff_sqsqrt',
+
+    'nlm_hbi_diff',
+    'nlm_hbi_diff_sq',
+    'nlm_hbi_diff_sqsqrt'
+]
 
 mytable = TableOne(final_performance, columns=columns, continuous=columns, pval=False)
 print(mytable.tabulate(tablefmt = "github"))
 
 # means and 95% CI's
+reduced_columns=[
+    'like_me_value', 
+    'pt_mahalanobis_distance_from_cohort', 
+
+    'mean_euclid_dist_to_pt', 
+    'lm_mean_euclid_dist_to_pt', 
+    'nlm_mean_euclid_dist_to_pt', 
+
+    'lm_mean_subj_diff_sx', 
+    'nlm_mean_subj_diff_sx', 
+    'lm_mean_subj_diff_sx_sqsqrt',  
+    'nlm_mean_subj_diff_sx_sqsqrt', 
+
+    'lm_mean_subj_diff_rtp', 
+    'nlm_mean_subj_diff_rtp', 
+    'lm_mean_subj_diff_rtp_sqsqrt',  
+    'nlm_mean_subj_diff_rtp_sqsqrt', 
+
+    'lm_age_diff',
+    'lm_age_diff_sqsqrt',
+
+    'nlm_age_diff',
+    'nlm_age_diff_sqsqrt',
+
+    'lm_time_since_inj_diff',
+    'lm_time_since_inj_diff_sqsqrt',
+
+    'nlm_time_since_inj_diff',
+    'nlm_time_since_inj_diff_sqsqrt',
+
+    'lm_hbi_diff',
+    'lm_hbi_diff_sqsqrt',
+
+    'nlm_hbi_diff',
+    'nlm_hbi_diff_sqsqrt'
+]
+
 confidence_intervals = {}
-for var_name in columns: 
+for var_name in reduced_columns: 
     confidence_intervals[f'{var_name}_upper'] = np.nanmean(final_performance[var_name]) + (1.96 * (np.std(final_performance[var_name]) / (np.sqrt(sum(~np.isnan(final_performance[var_name]))) )) )
     confidence_intervals[f'{var_name}_lower'] = np.nanmean(final_performance[var_name]) - (1.96 * (np.std(final_performance[var_name]) / (np.sqrt(sum(~np.isnan(final_performance[var_name]))) )) )
     confidence_intervals[f'{var_name}_mean'] = np.nanmean(final_performance[var_name])
     print(f"{var_name}")
     print(f"    {confidence_intervals[f'{var_name}_mean']:.2f} [{confidence_intervals[f'{var_name}_upper']:.2f}, {confidence_intervals[f'{var_name}_lower']:.2f}]\n")
 
-print(final_performance['like_me_value'].min(), final_performance['like_me_value'].max())
+print(f"Like-Me size min: {final_performance['like_me_value'].min()}, Max: {final_performance['like_me_value'].max()}")
 
 # p-vals
 p_value_pairs = [
     ('lm_mean_euclid_dist_to_pt', 'nlm_mean_euclid_dist_to_pt'),
+
     ('lm_mean_subj_diff_sx', 'nlm_mean_subj_diff_sx'),
     ('lm_mean_subj_diff_sx_sqsqrt', 'nlm_mean_subj_diff_sx_sqsqrt'),
+
     ('lm_mean_subj_diff_rtp', 'nlm_mean_subj_diff_rtp'),
-    ('lm_mean_subj_diff_rtp_sqsqrt', 'nlm_mean_subj_diff_rtp_sqsqrt')
+    ('lm_mean_subj_diff_rtp_sqsqrt', 'nlm_mean_subj_diff_rtp_sqsqrt'),
+
+    ('lm_age_diff', 'nlm_age_diff'),
+    ('lm_age_diff_sqsqrt', 'nlm_age_diff_sqsqrt'),
+
+    ('lm_time_since_inj_diff', 'nlm_time_since_inj_diff'),
+    ('lm_time_since_inj_diff_sqsqrt', 'nlm_time_since_inj_diff_sqsqrt'),
+
+    ('lm_hbi_diff', 'nlm_hbi_diff'),
+    ('lm_hbi_diff_sqsqrt', 'nlm_hbi_diff_sqsqrt')
 ]
 
 for lm_col, nlm_col in p_value_pairs:
@@ -206,7 +371,6 @@ for lm_col, nlm_col in p_value_pairs:
 
     t_stat, p_val = stats.ttest_rel(lm_clean, nlm_clean)
 
-    print(lm_col)
     print(lm_clean.head())
     print(f"t = {t_stat:.3f}, p = {p_val:.10f}\n")
 
@@ -250,6 +414,48 @@ plt.savefig("./figs/performance_euclidean_distances.png", dpi=300)
 plt.show()
 
 ################
+## demographics
+################
+# abs age
+fig, ax = plt.subplots(figsize=(8,4))
+sns.kdeplot(x=(final_performance['lm_age_diff_sqsqrt']), ax=ax, fill=True, alpha=0.4, color='slategrey', linewidth=2, label='Like-Me Sub-Cohort')
+sns.kdeplot(x=(final_performance['nlm_age_diff_sqsqrt']), ax=ax, fill=True, alpha=0.4, color='grey', linewidth=2, label='All other reference subjects')
+plt.axvline(x=0, ymax=0.95, color='lightgrey', linestyle='--', linewidth=1.5, label="Perfect Prediction")
+ax.set_xlabel("Absolute difference between patient and group mean age (years)")
+ax.set_ylabel("Density")
+ax.set_yticks([]) 
+ax.legend(frameon=True, loc='upper right')
+plt.tight_layout()
+plt.savefig("./figs/performance_age.png", dpi=300)
+plt.show()
+
+# abs time since inj
+fig, ax = plt.subplots(figsize=(8,4))
+sns.kdeplot(x=(final_performance['lm_time_since_inj_diff_sqsqrt']), ax=ax, fill=True, alpha=0.4, color='slategrey', linewidth=2, label='Like-Me Sub-Cohort')
+sns.kdeplot(x=(final_performance['nlm_time_since_inj_diff_sqsqrt']), ax=ax, fill=True, alpha=0.4, color='grey', linewidth=2, label='All other reference subjects')
+plt.axvline(x=0, ymax=0.95, color='lightgrey', linestyle='--', linewidth=1.5, label="Perfect Prediction")
+ax.set_xlabel("Absolute difference between patient and group mean time since injury (days)")
+ax.set_ylabel("Density")
+ax.set_yticks([]) 
+ax.legend(frameon=True, loc='upper right')
+plt.tight_layout()
+plt.savefig("./figs/performance_time_since_injury.png", dpi=300)
+plt.show()
+
+# abs hbi score
+fig, ax = plt.subplots(figsize=(8,4))
+sns.kdeplot(x=(final_performance['lm_hbi_diff_sqsqrt']), ax=ax, fill=True, alpha=0.4, color='slategrey', linewidth=2, label='Like-Me Sub-Cohort')
+sns.kdeplot(x=(final_performance['nlm_hbi_diff_sqsqrt']), ax=ax, fill=True, alpha=0.4, color='grey', linewidth=2, label='All other reference subjects')
+plt.axvline(x=0, ymax=0.95, color='lightgrey', linestyle='--', linewidth=1.5, label="Perfect Prediction")
+ax.set_xlabel("Absolute difference between patient and group mean symptom severity (HBI score)")
+ax.set_ylabel("Density")
+ax.set_yticks([]) 
+ax.legend(frameon=True, loc='upper right')
+plt.tight_layout()
+plt.savefig("./figs/performance_hbi.png", dpi=300)
+plt.show()
+
+################
 ## SX time
 ################
 # raw time sx diffs
@@ -257,7 +463,7 @@ fig, ax = plt.subplots(figsize=(8,4))
 sns.kdeplot(x=(final_performance['lm_mean_subj_diff_sx']*-1), ax=ax, fill=True, alpha=0.4, color='slategrey', linewidth=2, label='Like-Me Sub-Cohort')
 sns.kdeplot(x=(final_performance['nlm_mean_subj_diff_sx']*-1), ax=ax, fill=True, alpha=0.4, color='grey', linewidth=2, label='All other reference subjects')
 plt.axvline(x=0, ymax=0.95, color='lightgrey', linestyle='--', linewidth=1.5, label="Perfect Prediction")
-ax.set_xlabel("Difference in time to symptom resolution (group mean - patient, days)")
+ax.set_xlabel("Difference in time to symptom resolution (patient - group mean, days)")
 ax.set_ylabel("Density")
 ax.set_yticks([]) 
 ax.legend(frameon=True, loc='upper right')
@@ -273,7 +479,7 @@ fig, ax = plt.subplots(figsize=(8,4))
 sns.kdeplot(x=(final_performance['lm_mean_subj_diff_rtp']*-1), ax=ax, fill=True, alpha=0.4, color='slategrey', linewidth=2, label='Like-Me Sub-Cohort')
 sns.kdeplot(x=(final_performance['nlm_mean_subj_diff_rtp']*-1), ax=ax, fill=True, alpha=0.4, color='grey', linewidth=2, label='All other reference subjects')
 plt.axvline(x=0, ymax=0.95, color='lightgrey', linestyle='--', linewidth=1.5, label="Perfect Prediction")
-ax.set_xlabel("Difference in time to RTP (group mean - patient, days)")
+ax.set_xlabel("Difference in time to RTP (patient - group mean, days)")
 ax.set_ylabel("Density")
 ax.set_yticks([]) 
 ax.legend(frameon=True, loc='upper right')
