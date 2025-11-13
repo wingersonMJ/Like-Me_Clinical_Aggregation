@@ -9,6 +9,8 @@ import time
 from datetime import datetime
 pd.set_option("display.max_columns", None)
 
+from scipy import stats
+
 from tableone import TableOne
 
 import matplotlib.pyplot as plt
@@ -183,15 +185,37 @@ for var_name in columns:
     print(f"{var_name}")
     print(f"    {confidence_intervals[f'{var_name}_mean']:.2f} [{confidence_intervals[f'{var_name}_upper']:.2f}, {confidence_intervals[f'{var_name}_lower']:.2f}]\n")
 
+# p-vals
+p_value_pairs = [
+    ('lm_mean_euclid_dist_to_pt', 'nlm_mean_euclid_dist_to_pt'),
+    ('lm_mean_subj_diff_sx', 'nlm_mean_subj_diff_sx'),
+    ('lm_mean_subj_diff_sx_sqsqrt', 'nlm_mean_subj_diff_sx_sqsqrt'),
+    ('lm_mean_subj_diff_rtp', 'nlm_mean_subj_diff_rtp'),
+    ('lm_mean_subj_diff_rtp_sqsqrt', 'nlm_mean_subj_diff_rtp_sqsqrt')
+]
+
+for lm_col, nlm_col in p_value_pairs:
+    lm = final_performance[lm_col]
+    nlm = final_performance[nlm_col]
+
+    keep_idx = ~np.isnan(lm) & ~np.isnan(nlm)
+    lm_clean = lm[keep_idx]
+    nlm_clean = nlm[keep_idx]
+
+    t_stat, p_val = stats.ttest_rel(lm_clean, nlm_clean)
+
+    print(lm_col)
+    print(lm_clean.head())
+    print(f"t = {t_stat:.3f}, p = {p_val:.10f}\n")
+
 ###############
 ## plots
 # hist pt_mahalanobis_distance_from_cohort
 fig, ax = plt.subplots(figsize=(6,4))
-ax.hist(final_performance['pt_mahalanobis_distance_from_cohort'], bins='auto', density=True, alpha=0.4, edgecolor='white', color='grey', label='Histogram')
-sns.kdeplot(x=final_performance['pt_mahalanobis_distance_from_cohort'], ax=ax, fill=False, alpha=0.9, color='dimgrey', linewidth=1.8, label='Kernel Density Estimation')
+ax.hist(final_performance['pt_mahalanobis_distance_from_cohort'], bins='auto', density=True, alpha=0.4, edgecolor='white', color='grey')
+sns.kdeplot(x=final_performance['pt_mahalanobis_distance_from_cohort'], ax=ax, fill=False, alpha=0.9, color='dimgrey', linewidth=1.8)
 ax.set_xlabel("Mahalanobis Distance from Cohort")
 ax.set_ylabel("Density")
-ax.legend(frameon=False)
 plt.tight_layout()
 plt.show()
 
@@ -201,69 +225,91 @@ ax.hist(final_performance['like_me_value'], bins=20, density=True, alpha=0.4, ed
 sns.kdeplot(x=final_performance['like_me_value'], ax=ax, fill=False, alpha=0.9, color='dimgrey', linewidth=1.8, label='Kernel Density Estimation')
 ax.set_xlabel("Size of Like-Me Sub-Cohort (n)")
 ax.set_ylabel("Density")
-ax.legend(frameon=False)
+ax.set_yticks([]) 
 plt.tight_layout()
+plt.savefig("./figs/performance_like_me_values.png", dpi=300)
 plt.show()
 
 #################
 ## Euclid Dist 
 #################
 # hist lm_mean_euclid_dist_to_pt and nlm_mean_euclid_dist_to_pt
-fig, ax = plt.subplots(figsize=(6,4))
+fig, ax = plt.subplots(figsize=(8,4))
 ax.hist(final_performance['lm_mean_euclid_dist_to_pt'], bins=20, density=True, alpha=0.6, edgecolor='white', color='slategrey', label='Like-Me Sub-Cohort')
 ax.hist(final_performance['nlm_mean_euclid_dist_to_pt'], bins=40, density=True, alpha=0.5, edgecolor='white', color='dimgrey', label='All other reference subjects')
+sns.kdeplot(x=final_performance['lm_mean_euclid_dist_to_pt'], ax=ax, fill=False, alpha=0.8, color='slategrey', linewidth=1.8)
+sns.kdeplot(x=final_performance['nlm_mean_euclid_dist_to_pt'], ax=ax, fill=False, alpha=0.8, color='dimgrey', linewidth=1.8)
 ax.set_xlabel("Euclidean Distance to Patient (similarity confirmation)")
 ax.set_ylabel("Density")
-ax.legend(frameon=False)
+ax.set_yticks([]) 
+ax.legend(frameon=True, loc='upper right')
 plt.tight_layout()
+plt.savefig("./figs/performance_euclidean_distances.png", dpi=300)
 plt.show()
 
 ################
 ## SX time
 ################
-# kde lm_mean_subj_diff_sx and nlm_mean_subj_diff_sx
-fig, ax = plt.subplots(figsize=(6,4))
-sns.kdeplot(x=(final_performance['lm_mean_subj_diff_sx']*-1), ax=ax, fill=True, alpha=0.7, color='lightgrey', linewidth=1.8, label='Reference Cohort')
-sns.kdeplot(x=(final_performance['nlm_mean_subj_diff_sx']*-1), ax=ax, fill=True, alpha=0.25, color='slategrey', linewidth=1.8, label='Like-Me Sub-Cohort')
-plt.axvline(x=0, color='lightgrey', linestyle='--', linewidth=1.5, label="Perfect Prediction")
-ax.set_xlabel("Difference between actual patient Sx Time and mean of Like-Me Sub-Cohort")
-ax.set_ylabel("Density")
-ax.legend(frameon=False)
-plt.tight_layout()
-plt.show()
-
-# hist lm_median_subj_diff_sx and nlm_median_subj_diff_sx
-fig, ax = plt.subplots(figsize=(6,4))
-sns.kdeplot(x=(final_performance['lm_median_subj_diff_sx']*-1), ax=ax, fill=True, alpha=0.7, color='lightgrey', linewidth=1.8, label='Reference Cohort')
-sns.kdeplot(x=(final_performance['nlm_median_subj_diff_sx']*-1), ax=ax, fill=True, alpha=0.25, color='slategrey', linewidth=1.8, label='Like-Me Sub-Cohort')
+# raw time sx diffs
+fig, ax = plt.subplots(figsize=(8,4))
+sns.kdeplot(x=(final_performance['lm_mean_subj_diff_sx']*-1), ax=ax, fill=True, alpha=0.4, color='slategrey', linewidth=2, label='Like-Me Sub-Cohort')
+sns.kdeplot(x=(final_performance['nlm_mean_subj_diff_sx']*-1), ax=ax, fill=True, alpha=0.4, color='grey', linewidth=2, label='All other reference subjects')
 plt.axvline(x=0, ymax=0.95, color='lightgrey', linestyle='--', linewidth=1.5, label="Perfect Prediction")
-ax.set_xlabel("Difference between actual patient Sx Time and median of Like-Me Sub-Cohort")
+ax.set_xlabel("Difference in time to symptom resolution (group mean - patient, days)")
 ax.set_ylabel("Density")
-ax.legend(frameon=False)
+ax.set_yticks([]) 
+ax.legend(frameon=True, loc='upper right')
 plt.tight_layout()
+plt.savefig("./figs/raw_time_sx_diff.png", dpi=300)
 plt.show()
 
 ################
 ## RTP
 ################
-# hist lm_mean_subj_diff_rtp and nlm_mean_subj_diff_rtp
-fig, ax = plt.subplots(figsize=(6,4))
-sns.kdeplot(x=(final_performance['lm_mean_subj_diff_rtp']*-1), ax=ax, fill=True, alpha=0.7, color='lightgrey', linewidth=1.8, label='Reference Cohort')
-sns.kdeplot(x=(final_performance['nlm_mean_subj_diff_rtp']*-1), ax=ax, fill=True, alpha=0.25, color='slategrey', linewidth=1.8, label='Like-Me Sub-Cohort')
-plt.axvline(x=0, color='lightgrey', linestyle='--', linewidth=1.5, label="Perfect Prediction")
-ax.set_xlabel("Difference between actual patient Time to RTP and mean of Like-Me Sub-Cohort")
+# raw rtp diffs
+fig, ax = plt.subplots(figsize=(8,4))
+sns.kdeplot(x=(final_performance['lm_mean_subj_diff_rtp']*-1), ax=ax, fill=True, alpha=0.4, color='slategrey', linewidth=2, label='Like-Me Sub-Cohort')
+sns.kdeplot(x=(final_performance['nlm_mean_subj_diff_rtp']*-1), ax=ax, fill=True, alpha=0.4, color='grey', linewidth=2, label='All other reference subjects')
+plt.axvline(x=0, ymax=0.95, color='lightgrey', linestyle='--', linewidth=1.5, label="Perfect Prediction")
+ax.set_xlabel("Difference in time to RTP (group mean - patient, days)")
 ax.set_ylabel("Density")
-ax.legend(frameon=False)
+ax.set_yticks([]) 
+ax.legend(frameon=True, loc='upper right')
 plt.tight_layout()
+plt.savefig("./figs/raw_time_rtp_diff.png", dpi=300)
 plt.show()
 
-# hist lm_median_subj_diff_rtp and nlm_median_subj_diff_rtp
-fig, ax = plt.subplots(figsize=(6,4))
-sns.kdeplot(x=(final_performance['lm_median_subj_diff_rtp']*-1), ax=ax, fill=True, alpha=0.7, color='lightgrey', linewidth=1.8, label='Reference Cohort')
-sns.kdeplot(x=(final_performance['nlm_median_subj_diff_rtp']*-1), ax=ax, fill=True, alpha=0.25, color='slategrey', linewidth=1.8, label='Like-Me Sub-Cohort')
-plt.axvline(x=0, color='lightgrey', linestyle='--', linewidth=1.5, label="Perfect Prediction")
-ax.set_xlabel("Difference between actual patient Time to RTP and median of Like-Me Sub-Cohort")
+###########
+## Absolute value
+###########
+################
+## SX time
+################
+# Absolute value of differences for time sx
+fig, ax = plt.subplots(figsize=(8,4))
+sns.kdeplot(x=(final_performance['lm_mean_subj_diff_sx_sqsqrt']), ax=ax, fill=True, alpha=0.4, color='slategrey', linewidth=2, label='Like-Me Sub-Cohort')
+sns.kdeplot(x=(final_performance['nlm_mean_subj_diff_sx_sqsqrt']), ax=ax, fill=True, alpha=0.4, color='grey', linewidth=2, label='All other reference subjects')
+plt.axvline(x=0, ymax=0.95, color='lightgrey', linestyle='--', linewidth=1.5, label="Perfect Prediction")
+ax.set_xlabel("Absolute difference between patient and group mean time to symptom resolution (days)")
 ax.set_ylabel("Density")
-ax.legend(frameon=False)
+ax.set_yticks([]) 
+ax.legend(frameon=True, loc='upper right')
 plt.tight_layout()
+plt.savefig("./figs/abs_time_sx_diff.png", dpi=300)
+plt.show()
+
+################
+## RTP
+################
+# Absolute value of differences for RTP
+fig, ax = plt.subplots(figsize=(8,4))
+sns.kdeplot(x=(final_performance['lm_mean_subj_diff_rtp_sqsqrt']), ax=ax, fill=True, alpha=0.4, color='slategrey', linewidth=2, label='Like-Me Sub-Cohort')
+sns.kdeplot(x=(final_performance['nlm_mean_subj_diff_rtp_sqsqrt']), ax=ax, fill=True, alpha=0.3, color='gray', linewidth=2, label='All other reference subjects')
+plt.axvline(x=0, ymax=0.95, color='lightgrey', linestyle='--', linewidth=1.5, label="Perfect Prediction")
+ax.set_xlabel("Absolute difference between patient and group mean time to RTP (days)")
+ax.set_ylabel("Density")
+ax.set_yticks([]) 
+ax.legend(frameon=True, loc='upper right')
+plt.tight_layout()
+plt.savefig("./figs/abs_time_rtp_diff.png", dpi=300)
 plt.show()
