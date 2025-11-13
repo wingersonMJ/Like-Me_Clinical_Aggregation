@@ -185,6 +185,8 @@ for var_name in columns:
     print(f"{var_name}")
     print(f"    {confidence_intervals[f'{var_name}_mean']:.2f} [{confidence_intervals[f'{var_name}_upper']:.2f}, {confidence_intervals[f'{var_name}_lower']:.2f}]\n")
 
+print(final_performance['like_me_value'].min(), final_performance['like_me_value'].max())
+
 # p-vals
 p_value_pairs = [
     ('lm_mean_euclid_dist_to_pt', 'nlm_mean_euclid_dist_to_pt'),

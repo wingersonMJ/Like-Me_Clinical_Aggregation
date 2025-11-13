@@ -168,3 +168,79 @@ return-to-play and would instead be using these plots to generate approximate re
 
 *Clinical interpretation: Among ~40 subjects from the like-me sub-cohort, this is their aggregated recovery outcomes. From this, I can set expectations for recovery for my 
 current patient, all based on previous patients from my clinic who have similar clinical characteristics.*
+
+## Validating the Like-Me Sub-Cohort
+
+**Appraoch:** Without an external cohort to use for validation, I just iterated through each individual in the reference cohort and calculated various outcomes for that subject's like-me cohort vs all the remaining subjects in the reference cohort. This information is summarized below:  
+
+### Like-Me Sub-Cohort Sizes (n):
+
+I used a flexible method for determining the Like-Me Sub-Cohort size, which is based on the individual patients Mahalanobis distance from the cohort as a whole. Patient's more similar to the reference cohort will have a larger Sub-Cohort size.  
+
+**Figure 5.** Sub-Cohort sizes after iterating through the reference cohort and using each subject as an 'example patient'.  
+
+<img src="figs\performance_like_me_values.png" width=800>
+<br>
+<br>
+
+### Euclidean distance:
+
+Euclidean distance is used to determine which subjects from the reference cohort will be included in the patient's
+like-me sub-cohort.  
+
+**Figure 6.** Mean Euclidean distances for the patient vs their sub-cohort and the patient vs the remaining reference cohort subjects, after iterating through the reference cohort and using each subject as an 'example patient'.  
+
+<img src="figs\performance_euclidean_distances.png" width=800>  
+
+*Interpretation: As expected, the subjects in the like-me sub-cohort are closer and more similar to the patient than the subjects who are not in the like-me sub-cohort (really just a sanity check).* 
+
+## Exploring Recovery Outcomes:
+
+### Time to Symptom Resolution:
+
+**Figure 7A.** Raw differences in time to symptom resolution for the patient vs their sub-cohort and the patient vs the remaining reference cohort subjects, after iterating through the reference cohort and using each subject as an 'example patient'.  
+
+<img src="figs\raw_time_sx_diff.png" width=800>
+<br>
+<br>
+
+**Figure 7B.** |Absolute value| differences in time to symptom resolution for the patient vs their sub-cohort and the patient vs the remaining reference cohort subjects, after iterating through the reference cohort and using each subject as an 'example patient'.  
+
+<img src="figs\abs_time_sx_diff.png" width=800>  
+
+*Interpretation: The patient's actual time to symptom resolution is closer to the mean of the like-me sub-cohort's 
+time to symptom resolution (difference value closer to zero) than the mean of the remaining reference cohort subject's time to symptom resolution.*   
+
+### Time to Return to Play (RTP):
+
+**Figure 8A.** Raw differences in time to return to play (RTP) for the patient vs their sub-cohort and the patient vs the remaining reference cohort subjects, after iterating through the reference cohort and using each subject as an 'example patient'.  
+
+<img src="figs\raw_time_rtp_diff.png" width=800>
+<br>
+<br>
+
+**Figure 8B.** |Absolute value| differences in time to RTP for the patient vs their sub-cohort and the patient vs the remaining reference cohort subjects, after iterating through the reference cohort and using each subject as an 'example patient'.  
+
+<img src="figs\abs_time_rtp_diff.png" width=800>  
+
+*Interpretation: The patient's actual time to RTP is closer to the mean of the like-me sub-cohort's time to RTP 
+(difference value closer to zero) than the mean of the remaining reference cohort subject's time to RTP.*
+
+### Narative explanation:
+
+The average size of the like-me cohort was 55.09 subjects (95% CI: 54.5 to 55.7) and ranged from 37 to 78 subjects, after iterating 
+through each subject in the reference cohort as the "example patient".  
+
+After iterating through and using all subjects in the reference cohort as the "example patient", the mean Euclidean distance from each
+ subject to the patient was smaller (closer) for the Like-Me Sub-Cohort than the remaining reference cohort subjects 
+(0.53 [0.54, 0.52] vs 1.06 [1.06, 1.05]; p<0.001). The actual patient's time to symptom resolution and time to return to play were 
+closer to the Like-Me Sub-Cohort's mean time to symptom resolution and mean time to RTP than the remaining reference cohort's means
+ (symptom resolution difference: 9.72 [10.80, 8.64] vs 11.94 [13.10, 10.77] days; p<0.001; RTP difference: 15.73 [17.22, 14.24] vs 
+18.41 [20.00, 16.82] days; p<0.001).  
+
+| Varaible                                          | Like-Me Sub-Cohort   | Remaining Reference Cohort | P-value |
+| ------------------------------------------------- | :------------------: | :------------------------: | ------: | 
+|                                                   | Mean [95% CI]        | Mean [95% CI]              |         |
+| Euclidean distance to the patient                 | 0.53 [0.54, 0.52]    | 1.06 [1.06, 1.05]          | <0.001  |
+| Symptom Resolution Absolute Difference: patient - group | 9.72 [10.80, 8.64]   | 11.94 [13.10, 10.77]       | <0.001  |
+| RTP Absolute Difference: patient - group                | 15.73 [17.22, 14.24] | 18.41 [20.00, 16.82]       | <0.001  |
