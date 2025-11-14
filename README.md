@@ -5,6 +5,19 @@ characteristics. Using a like-me matched sub-cohort, we can aggregate clinical d
 presenting patient, providing summary statistics on recovery and other important health information among individuals from the larger cohort who are "as similar as possible" to 
 the individual being seen for care.  
 
+## Example Patient Summary: 
+
+**An example summary report that a patient/clinician would recieve, describing (1: Patient Summary) their patients charactersitcs, (2: Your Like-ME Cohort) their Like-Me Cohort size, a visual
+representing the closeness between the patient and their like-me cohort in 2-Dimensional space, and a measure of how well the patient's characteristics relate to individuals in the reference cohort (are they an outlier? Will their like-me cohort serve as a quality representation?), (3: Aggregate Demographics) the mean and standard deviation or n and percent for various health-related features for the subjects within their like-me cohort, (4: Visualizing your Like-Me Cohort) visual representations for those features, (5: Recovery Expectations) a summary of recovery outcomes for the subjects in their like-me cohort, (6: Visualizing Your Expected Recovery) visual representations for those recovery expectations.** 
+
+<img src="figs\example_patient_report.png" width=900>
+<br>
+<br>
+
+**An example summary report that a patient/clinician would recieve, describing (1: Purpose) the intent and method of validating the like-me cohort approach, (2: Average Like-Me Cohort Size) information on how we determine the size of the like-me cohort (hint - it's not the same for everyone), (3: Euclidean Distances Between Groups) the mean euclidean distance between the patient and the like-me cohort vs the remaining subjects in the reference cohort to show that the like-me cohort is closer to the patient in clinical characteristics, (4: Clinical Characteristics Validation) visual representations showing how the like-me cohort is closer to the patient in age, time since injury, and symptom burden score, (5: Recovery Outcomes Validation) a summary of recovery outcomes for the subjects in their like-me cohort, (6: Visualizing Your Expected Recovery) visual representations showing how the like-me cohort is closer to the patient in time to symptom resolution and time to return to play than the subjects remaining in the reference cohort.** 
+
+<img src="figs\example_validation_summary.png" width=900>
+
 ## Purpose: 
 
 Complex prediction models, such as neural networks, tree-based classifiers, or simple regressions, can inform patients and clinicians about expected recovery timelines. 
@@ -273,6 +286,6 @@ closer to the Like-Me Sub-Cohort's mean time to symptom resolution and mean time
 | Euclidean distance to the patient                                 | 0.53 [0.54, 0.52]    | 1.06 [1.06, 1.05]          | <0.001  | Figure 6                       |
 | Age Absolute Difference: patient - group                          | 1.33 [1.42, 1.25]    | 1.98 [2.10, 1.86]          | <0.001  | Figure 7                       |
 | Time Since Injury Absolute Difference: patient - group            | 2.36 [2.50, 2.22]    | 4.80 [5.05, 4.55]          | <0.001  | Figure 8                       |
-| Symptom Severity (HBI Score) Absolute Difference: patient - group | 6.07 [6.46, 5.69]    | 11.32 [11.96, 10.69]       | <0.016  | Figure 9                       |
+| Symptom Severity (HBI Score) Absolute Difference: patient - group | 6.07 [6.46, 5.69]    | 11.32 [11.96, 10.69]       | 0.016   | Figure 9                       |
 | Symptom Resolution Absolute Difference: patient - group           | 9.72 [10.80, 8.64]   | 11.94 [13.10, 10.77]       | <0.001  | Figure 10B                     |
 | RTP Absolute Difference: patient - group                          | 15.73 [17.22, 14.24] | 18.41 [20.00, 16.82]       | <0.001  | Figure 11B                     |

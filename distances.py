@@ -88,6 +88,15 @@ metrics = ['mahalanobis_distance_to_patient', 'cosine_similarity', 'normalized_d
 cohort[metrics].head()
 print(cohort['euclidean_distance'].min(), cohort['euclidean_distance'].max())
 
+# What percentile is mah dist of pt compared to rest of cohort.
+print(pt_mahalanobis_distance_from_cohort)
+
+pct_subjects_closer_than_you = sum(cohort['mahalanobis_distance_to_cohort'] < pt_mahalanobis_distance_from_cohort) / len(cohort['mahalanobis_distance_to_cohort'])
+pct_subjects_further_than_you = 1 - pct_subjects_closer_than_you
+
+print(f"Percent of subjects closer than the patient: {pct_subjects_closer_than_you*100:.2f}")
+print(f"Percent of subjects further than the patient: {pct_subjects_further_than_you*100:.2f}")
+
 ###############
 ## Quick comparisons between metrics
 sn.pairplot(data=cohort[metrics])
@@ -145,6 +154,16 @@ print(patient_original)
 # y's - never changed from the original scale
 like_me_y.describe()
 print(patient_y)
+
+# print means and 95% CI's
+recovery_outcomes = ['time_sx', 'time_rtp']
+confidence_intervals = {}
+for var_name in recovery_outcomes: 
+    confidence_intervals[f'{var_name}_upper'] = np.nanmean(like_me_y[var_name]) + (1.96 * (np.std(like_me_y[var_name]) / (np.sqrt(sum(~np.isnan(like_me_y[var_name]))) )) )
+    confidence_intervals[f'{var_name}_lower'] = np.nanmean(like_me_y[var_name]) - (1.96 * (np.std(like_me_y[var_name]) / (np.sqrt(sum(~np.isnan(like_me_y[var_name]))) )) )
+    confidence_intervals[f'{var_name}_mean'] = np.nanmean(like_me_y[var_name])
+    print(f"{var_name}")
+    print(f"    {confidence_intervals[f'{var_name}_mean']:.2f} [{confidence_intervals[f'{var_name}_upper']:.2f}, {confidence_intervals[f'{var_name}_lower']:.2f}]\n")
 
 #################
 # box plots for some vars 
@@ -266,3 +285,39 @@ plt.figure(
 )
 plt.tight_layout()
 plt.savefig("./figs/like_me_aggregated_PSaC", dpi=300)
+
+##################
+# Plot without patient value:
+# time sx res
+plt.figure(figsize=(12,8))
+sn.kdeplot(
+    x=like_me_y['time_sx'],
+    fill=True,
+    alpha=0.5,
+    color='steelblue')
+plt.axvline(np.nanmean(like_me_y['time_sx']), color='lightgrey', linestyle='--', linewidth=2, label=f"Mean Like-Me Cohort Time to Symptom Resolution: {np.nanmean(like_me_y['time_sx']):.1f} days")
+plt.axvline(confidence_intervals[f'time_sx_upper'], color='grey', linestyle=':', linewidth=2, label="Range of your expected recovery")
+plt.axvline(confidence_intervals[f'time_sx_lower'], color='grey', linestyle=':', linewidth=2)
+plt.xlabel("Time to Symptom Resolution (days)")
+plt.ylabel("Smoothed Kernel Density")
+plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.125))
+plt.yticks([]) 
+plt.tight_layout()
+plt.savefig("./figs/like_me_aggregated_time_sx_no_pt", dpi=300)
+
+# time to rtp
+plt.figure(figsize=(12,8))
+sn.kdeplot(
+    x=like_me_y['time_rtp'],
+    fill=True,
+    alpha=0.5,
+    color='steelblue')
+plt.axvline(np.nanmean(like_me_y['time_rtp']), color='lightgrey', linestyle='--', linewidth=2, label=f"Mean Like-Me-Cohort Time to Return-to-Play: {np.nanmean(like_me_y['time_rtp']):.1f} days")
+plt.axvline(confidence_intervals[f'time_rtp_upper'], color='grey', linestyle=':', linewidth=2, label="Range of your expected recovery")
+plt.axvline(confidence_intervals[f'time_rtp_lower'], color='grey', linestyle=':', linewidth=2)
+plt.xlabel("Time to Return-to-Play (days)")
+plt.ylabel("Smoothed Kernel Density")
+plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.125))
+plt.yticks([]) 
+plt.tight_layout()
+plt.savefig("./figs/like_me_aggregated_time_rtp_no_pt", dpi=300)
