@@ -1,13 +1,13 @@
-# A Patients-Like-Me approach to aggregating data in clinical management of concussion
+# A Like-Me approach to aggregating data in clinical management of concussion
 
 **Summary:** This project demonstrates a simple "like-me" approach to matching patients to a reference cohort based on post-concussion demographic and clinical 
 characteristics. Using a like-me matched sub-cohort, we can aggregate clinical data for individuals within a reference cohort who are most-similar to the 
-presenting patient, providing summary statistics on recovery and other important health information among individuals from the larger cohort who are "as similar as possible" to 
-the individual being seen for care.  
+presenting patient, providing summary statistics on recovery and other important health information among individuals from a larger cohort who are "as similar as possible" to 
+the patient being seen for care.  
 
 ## Example Patient Summary: 
 
-**An example summary report that a patient/clinician would recieve, describing (1: Patient Summary) their patients charactersitcs, (2: Your Like-ME Cohort) their Like-Me Cohort size, a visual
+**An example summary report that a patient/clinician would recieve, describing (1: Patient Summary) their patient charactersitcs, (2: Your Like-ME Cohort) their Like-Me Cohort size, a visual
 representing the closeness between the patient and their like-me cohort in 2-Dimensional space, and a measure of how well the patient's characteristics relate to individuals in the reference cohort (are they an outlier? Will their like-me cohort serve as a quality representation?), (3: Aggregate Demographics) the mean and standard deviation or n and percent for various health-related features for the subjects within their like-me cohort, (4: Visualizing your Like-Me Cohort) visual representations for those features, (5: Recovery Expectations) a summary of recovery outcomes for the subjects in their like-me cohort, (6: Visualizing Your Expected Recovery) visual representations for those recovery expectations.** 
 
 <img src="figs\example_patient_report.png" width=900>
@@ -23,8 +23,7 @@ representing the closeness between the patient and their like-me cohort in 2-Dim
 Complex prediction models, such as neural networks, tree-based classifiers, or simple regressions, can inform patients and clinicians about expected recovery timelines. 
 However, these models are limitted by a few factors: 
 - Most prediction models are trained on large cohorts with diverse patient and injury characteristics.
-    - While usually considered a strength, in some contexts prediction model generalization to a more precise patient population in a real-world setting can be
-    limitted - patients are left asking "but do these results apply to *me*?" and clinicians are left wondering if prediction models are accurate in thier patient population.
+    - While usually considered a strength, some models may not generalize to a more precise real-world patient population - patients are left asking "but do these results apply to *me*?" and clinicians are left wondering if prediction models are accurate among the patients they see for care.
 - Few prediction models can provide clear reasoning for *why* or *how* a prediction is made, or what factors were most influental in a prediction. 
 - Prediction models, especially classifiers, can treat medical diseases as a series of binary decisions made in sequence.
     - Actual clinical management of disease is more complex, and clinicians must use all available information to guide decisions to promote long-term health and recovery.  
@@ -61,8 +60,8 @@ cohort with similar characteristics.
         - When numerics are also min-max scaled, then 0 is the lowest value in the dataset and 1 is the largest
         - Therefore, if comparing a numeric and a categorical, a 1-unit difference in the categorical variable is a simple difference of binary category. 
         - But a 1-unit difference in the numeric variable is the entire range of the variable...
-        - These things are not equal... theoretically, the 'distance' between a boy and a girl (binary sex categorical feature) is much smaller than that between the minimum 
-        and maximum value of any other numeric variable
+        - These things are not equal... theoretically, the 'distance' between a boy and a girl (binary sex categorical feature) is probably much smaller than the distance
+         between the minimum and maximum value of symptom severity or any other numeric variable
     - How do we fix this?
         - Scale the categorical variables down after min-max is applied. Multiply the categorical variable by some scalar (I used 0.66), to down-weight the literal distances 
         between the two levels of the feature.
@@ -178,8 +177,8 @@ return-to-play and would instead be using these plots to generate approximate re
 
 <img src="figs\like_me_aggregated_PSaC.png" width=800>
 
-*Clinical interpretation: Among ~40 subjects from the like-me sub-cohort, this is their aggregated recovery outcomes. From this, I can set expectations for recovery for my 
-current patient, all based on previous patients from my clinic who have similar clinical characteristics.*
+*Clinical interpretation: Among ~40 subjects from the like-me sub-cohort, these are their aggregated recovery outcomes. From this, I can set expectations for recovery for my 
+current patient, all based on previous patients from my clinic who have similar characteristics.*
 
 ## Validating the Like-Me Sub-Cohort
 
